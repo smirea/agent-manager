@@ -26,8 +26,4 @@
 # Frontend
 
 - Tailwind CSS v4 is wired through `@tailwindcss/vite`.
-- Skeleton v4 is installed with `@skeletonlabs/skeleton` and `@skeletonlabs/skeleton-svelte`.
 - Global styles are imported from `apps/ui/src/routes/layout.css`.
-- The active Skeleton theme is the local generated theme at `apps/ui/src/routes/theme.css`, applied via `data-theme="theme"` in `apps/ui/src/app.html`.
-- `@skeletonlabs/skeleton-svelte` is excluded from Vite dependency optimization because its package imports internal `.svelte` files that esbuild cannot prebundle.
-- `skipLibCheck` is enabled for the UI because Skeleton's published declarations currently create third-party declaration noise under `svelte-check`.

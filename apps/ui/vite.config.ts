@@ -5,9 +5,6 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
-	optimizeDeps: {
-		exclude: ['@skeletonlabs/skeleton-svelte'],
-	},
 	server: {
 		allowedHosts: ['agent-manager.localhost'],
 		port: env.UI_PORT,
