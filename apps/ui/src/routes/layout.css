@@ -1,5 +1,10 @@
+@import '@fontsource-variable/google-sans-flex/wght.css';
 @import 'tailwindcss';
 
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton-svelte';
 @import './theme.css';
+
+:where(html, body, button, input, textarea, select, pre, code, kbd, samp) {
+	font-family: var(--base-font-family);
+}
