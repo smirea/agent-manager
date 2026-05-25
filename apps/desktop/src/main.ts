@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 let serverProcess: ChildProcess | undefined;
 
 const serverDir = fileURLToPath(new URL('../../../server', import.meta.url));
+const electronUiUrl = `http://127.0.0.1:${env.UI_PORT}`;
 
 function startServer() {
 	if (env.SKIP_SERVER) {
@@ -47,7 +48,7 @@ async function createWindow() {
 		width: 1120,
 	});
 
-	await window.loadURL(env.UI_URL);
+	await window.loadURL(electronUiUrl);
 
 	if (env.SMOKE) {
 		const health = await window.webContents.executeJavaScript('fetch("/api/health").then((r) => r.json())');
