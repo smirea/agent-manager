@@ -1,0 +1,18 @@
+{
+	"name": "@agent-manager/desktop",
+	"private": true,
+	"type": "module",
+	"main": "out/main/main.js",
+	"scripts": {
+		"build": "electron-vite build",
+		"dev": "electron-vite dev",
+		"typecheck": "tsc --noEmit -p tsconfig.json"
+	},
+	"dependencies": {
+		"electron": "^39.1.2"
+	},
+	"devDependencies": {
+		"electron-vite": "^4.0.0",
+		"typescript": "^6.0.3"
+	}
+}

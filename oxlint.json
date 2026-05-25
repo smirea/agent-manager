@@ -1,6 +1,6 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["typescript", "unicorn", "oxc", "import", "promise", "node"],
+	"plugins": ["typescript", "unicorn", "oxc", "import", "promise", "node", "svelte"],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "warn",
@@ -9,20 +9,26 @@
 		"pedantic": "warn"
 	},
 	"rules": {
-		"no-unused-vars": "warn",
 		"no-console": "off",
-		"unicorn/no-null": "off",
-		"unicorn/prefer-top-level-await": "off",
+		"no-unused-vars": "warn",
+		"node/no-process-env": "off",
 		"unicorn/filename-case": "off",
-		"node/no-process-env": "error"
+		"unicorn/no-null": "off",
+		"unicorn/prefer-top-level-await": "off"
 	},
-	"overrides": [
-		{
-			"files": ["src/config.ts"],
-			"rules": {
-				"node/no-process-env": "off"
-			}
-		}
-	],
-	"ignorePatterns": ["node_modules", "dist", "build", "generated", "**/generated", "**/*.generated.ts", "**/*.gen.ts"]
+	"ignorePatterns": [
+		"node_modules",
+		"dist",
+		"build",
+		"out",
+		"**/dist",
+		"**/build",
+		"**/out",
+		".svelte-kit",
+		"**/.svelte-kit",
+		"generated",
+		"**/generated",
+		"**/*.generated.ts",
+		"**/*.gen.ts"
+	]
 }

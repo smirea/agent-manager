@@ -1,0 +1,22 @@
+{
+	"name": "@agent-manager/ui",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "vite build",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"dev": "vite",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@agent-manager/shared": "workspace:*",
+		"@sveltejs/adapter-static": "^3.0.9",
+		"@sveltejs/kit": "^2.48.4",
+		"svelte": "^5.41.3",
+		"vite": "^7.1.12"
+	},
+	"devDependencies": {
+		"svelte-check": "^4.3.3",
+		"typescript": "^6.0.3"
+	}
+}

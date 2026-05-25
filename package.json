@@ -1,19 +1,31 @@
 {
-    "name": "agent-manager",
-    "private": true,
-    "scripts": {
-        "lint": "oxlint --fix && oxfmt",
-        "test": "bun test",
-        "dev": "bun --watch src/index.ts"
-    },
-    "dependencies": {
-        "@types/bun": "^1.3.14",
-        "@typescript/native-preview": "^7.0.0-dev.20260525.1",
-        "kill-port-process": "^4.0.2",
-        "lefthook": "^2.1.8",
-        "lodash": "^4.18.1",
-        "oxfmt": "^0.51.0",
-        "oxlint": "^1.66.0",
-        "typescript": "^6.0.3"
-    }
+	"name": "agent-manager",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"type": "module",
+	"scripts": {
+		"build": "bun --filter @agent-manager/ui build && bun --filter @agent-manager/desktop build",
+		"dev:web": "concurrently -k -s first -n server,ui \"bun --filter @agent-manager/server dev\" \"bun --filter @agent-manager/ui dev --host 127.0.0.1\"",
+		"dev:electron": "concurrently -k -s first -n ui,electron \"bun --filter @agent-manager/ui dev --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && bun --filter @agent-manager/desktop dev\"",
+		"format": "oxfmt --write .",
+		"lint": "oxlint --fix && oxfmt --write .",
+		"prepare": "lefthook install",
+		"smoke:electron": "concurrently -k -s first -n ui,electron \"bun --filter @agent-manager/ui dev --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && AGENT_MANAGER_SMOKE=1 bun --filter @agent-manager/desktop dev\"",
+		"start": "bun --filter @agent-manager/server start",
+		"test": "bun test --pass-with-no-tests",
+		"typecheck": "bun --filter @agent-manager/ui check && bun --filter @agent-manager/desktop typecheck && bun --filter @agent-manager/server typecheck"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.3.14",
+		"@types/node": "^24.0.0",
+		"concurrently": "^9.2.1",
+		"lefthook": "^2.1.8",
+		"oxfmt": "^0.51.0",
+		"oxlint": "^1.66.0",
+		"typescript": "^6.0.3",
+		"wait-on": "^9.0.1"
+	}
 }

@@ -1,31 +1,23 @@
 {
-	// pulled from bun init
 	"compilerOptions": {
+		"allowImportingTsExtensions": true,
 		"lib": ["ESNext", "DOM"],
-		"types": ["bun"],
-		"target": "ESNext",
 		"module": "Preserve",
 		"moduleDetection": "force",
-		"jsx": "react-jsx",
-		"allowJs": true,
-
 		"moduleResolution": "bundler",
-		"allowImportingTsExtensions": true,
-		"verbatimModuleSyntax": true,
 		"noEmit": true,
-
-		"strict": true,
-		"skipLibCheck": true,
 		"noFallthroughCasesInSwitch": true,
-		// "noUncheckedIndexedAccess": true, // annoying
 		"noImplicitOverride": true,
-
+		"noPropertyAccessFromIndexSignature": false,
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"noPropertyAccessFromIndexSignature": false,
-
 		"paths": {
-			"shared/*": ["./shared/*"]
-		}
+			"@agent-manager/shared": ["./packages/shared/src/index.ts"]
+		},
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ESNext",
+		"types": ["bun"],
+		"verbatimModuleSyntax": true
 	}
 }
