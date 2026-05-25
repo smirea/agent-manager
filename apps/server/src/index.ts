@@ -1,8 +1,8 @@
 import type { Agent, AgentEvent, HealthResponse } from '@agent-manager/shared';
 
-const host = process.env.AGENT_MANAGER_HOST ?? '127.0.0.1';
-const port = Number(process.env.AGENT_MANAGER_PORT ?? '6051');
-const workspace = process.env.AGENT_MANAGER_WORKSPACE ?? process.cwd();
+const host = process.env.HOST ?? '127.0.0.1';
+const port = Number(process.env.PORT ?? '6051');
+const workspace = process.env.WORKSPACE ?? process.cwd();
 const uiBuildPath = new URL('../../ui/build/', import.meta.url);
 
 const agents: Agent[] = [

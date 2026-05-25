@@ -5,12 +5,12 @@ import { fileURLToPath } from 'node:url';
 let serverProcess: ChildProcess | undefined;
 
 const serverDir = fileURLToPath(new URL('../../../server', import.meta.url));
-const uiUrl = process.env.AGENT_MANAGER_UI_URL ?? 'http://agent-manager.localhost';
-const serverUrl = process.env.AGENT_MANAGER_SERVER_URL ?? 'http://127.0.0.1:6051';
-const smoke = process.env.AGENT_MANAGER_SMOKE === '1';
+const uiUrl = process.env.UI_URL ?? 'http://agent-manager.localhost';
+const serverUrl = process.env.INTERNAL_SERVER_URL ?? process.env.SERVER_URL ?? 'http://127.0.0.1:6051';
+const smoke = process.env.SMOKE === '1';
 
 function startServer() {
-	if (process.env.AGENT_MANAGER_SKIP_SERVER === '1') {
+	if (process.env.SKIP_SERVER === '1') {
 		return;
 	}
 
@@ -18,7 +18,7 @@ function startServer() {
 		cwd: serverDir,
 		env: {
 			...process.env,
-			AGENT_MANAGER_PORT: process.env.AGENT_MANAGER_PORT ?? '6051',
+			PORT: process.env.PORT ?? '6051',
 		},
 		stdio: 'inherit',
 	});

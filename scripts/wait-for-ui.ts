@@ -1,4 +1,4 @@
-const port = process.env.AGENT_MANAGER_UI_PORT ?? '6050';
+const port = process.env.UI_PORT ?? '6050';
 const url = `http://127.0.0.1:${port}`;
 
 for (let attempt = 0; attempt < 100; attempt += 1) {
