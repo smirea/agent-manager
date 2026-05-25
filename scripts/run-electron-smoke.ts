@@ -1,7 +1,7 @@
 const proc = Bun.spawn(['bun', '--filter', '@agent-manager/desktop', 'dev'], {
 	env: {
-		...process.env,
-		SMOKE: '1',
+		...Bun.env,
+		SMOKE: 'true',
 	},
 	stdout: 'inherit',
 	stderr: 'inherit',

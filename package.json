@@ -18,6 +18,9 @@
 		"test": "bun test --pass-with-no-tests",
 		"typecheck": "bun --filter @agent-manager/ui check && bun --filter @agent-manager/desktop typecheck && bun --filter @agent-manager/server typecheck"
 	},
+	"dependencies": {
+		"@agent-manager/shared": "workspace:*"
+	},
 	"devDependencies": {
 		"@types/bun": "^1.3.14",
 		"@types/node": "^24.0.0",

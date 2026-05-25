@@ -1,5 +1,6 @@
-const port = process.env.UI_PORT ?? '6050';
-const url = `http://127.0.0.1:${port}`;
+import env from '@agent-manager/shared/env';
+
+const url = `http://127.0.0.1:${env.UI_PORT}`;
 
 for (let attempt = 0; attempt < 100; attempt += 1) {
 	try {

@@ -4,11 +4,12 @@
 	"type": "module",
 	"main": "out/main/main.js",
 	"scripts": {
-		"build": "electron-vite build",
-		"dev": "electron-vite dev",
+		"build": "bun --env-file=../../.env --env-file=../../.env.local electron-vite build",
+		"dev": "bun --env-file=../../.env --env-file=../../.env.local electron-vite dev",
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
+		"@agent-manager/shared": "workspace:*",
 		"electron": "^39.1.2"
 	},
 	"devDependencies": {

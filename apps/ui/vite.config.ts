@@ -1,18 +1,16 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import env from '@agent-manager/shared/env';
 import { defineConfig } from 'vite';
-
-const apiUrl = process.env.API_URL ?? 'http://agent-manager-api.localhost';
-const uiPort = Number(process.env.UI_PORT ?? '6050');
 
 export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
 		allowedHosts: ['agent-manager.localhost'],
-		port: uiPort,
+		port: env.UI_PORT,
 		strictPort: true,
 		proxy: {
 			'/api': {
-				target: apiUrl,
+				target: env.API_URL,
 				changeOrigin: true,
 			},
 		},

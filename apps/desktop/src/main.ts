@@ -1,25 +1,19 @@
 import { app, BrowserWindow } from 'electron';
+import env from '@agent-manager/shared/env';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 let serverProcess: ChildProcess | undefined;
 
 const serverDir = fileURLToPath(new URL('../../../server', import.meta.url));
-const uiUrl = process.env.UI_URL ?? 'http://agent-manager.localhost';
-const serverUrl = process.env.SERVER_URL ?? 'http://127.0.0.1:6051';
-const smoke = process.env.SMOKE === '1';
 
 function startServer() {
-	if (process.env.SKIP_SERVER === '1') {
+	if (env.SKIP_SERVER) {
 		return;
 	}
 
 	serverProcess = spawn('bun', ['run', 'dev'], {
 		cwd: serverDir,
-		env: {
-			...process.env,
-			PORT: process.env.PORT ?? '6051',
-		},
 		stdio: 'inherit',
 	});
 }
@@ -27,7 +21,7 @@ function startServer() {
 async function waitForServer() {
 	for (let attempt = 0; attempt < 80; attempt += 1) {
 		try {
-			const response = await fetch(`${serverUrl}/api/health`);
+			const response = await fetch(`${env.SERVER_URL}/api/health`);
 			if (response.ok) {
 				return;
 			}
@@ -36,7 +30,7 @@ async function waitForServer() {
 		await new Promise(resolve => setTimeout(resolve, 100));
 	}
 
-	throw new Error(`Server did not respond at ${serverUrl}`);
+	throw new Error(`Server did not respond at ${env.SERVER_URL}`);
 }
 
 async function createWindow() {
@@ -44,7 +38,7 @@ async function createWindow() {
 
 	const window = new BrowserWindow({
 		height: 760,
-		show: !smoke,
+		show: !env.SMOKE,
 		webPreferences: {
 			contextIsolation: true,
 			nodeIntegration: false,
@@ -53,9 +47,9 @@ async function createWindow() {
 		width: 1120,
 	});
 
-	await window.loadURL(uiUrl);
+	await window.loadURL(env.UI_URL);
 
-	if (smoke) {
+	if (env.SMOKE) {
 		const health = await window.webContents.executeJavaScript('fetch("/api/health").then((r) => r.json())');
 		console.log(`electron smoke loaded ${health.runtime} backend at ${health.now}`);
 		app.quit();

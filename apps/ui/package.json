@@ -3,10 +3,10 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "vite build",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"dev": "vite",
-		"preview": "vite preview"
+		"build": "bun --env-file=../../.env --env-file=../../.env.local --bun vite build",
+		"check": "bun --env-file=../../.env --env-file=../../.env.local svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"dev": "bun --env-file=../../.env --env-file=../../.env.local --bun vite",
+		"preview": "bun --env-file=../../.env --env-file=../../.env.local --bun vite preview"
 	},
 	"dependencies": {
 		"@agent-manager/shared": "workspace:*",
