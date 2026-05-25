@@ -5,7 +5,6 @@ const env = z
 	.object({
 		UI_URL: z.url(),
 		SERVER_URL: z.url(),
-		API_URL: z.url(),
 		UI_PORT: z.coerce.number().int(),
 		PORT: z.coerce.number().int(),
 		SMOKE: z.stringbool(),

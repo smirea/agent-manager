@@ -10,4 +10,3 @@
 # Local Dev Hosts
 
 - UI: agent-manager.localhost -> 6050
-- API: agent-manager-api.localhost -> 6051
