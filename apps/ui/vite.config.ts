@@ -9,6 +9,7 @@ export default defineConfig({
 	server: {
 		allowedHosts: ['agent-manager.localhost'],
 		port: uiPort,
+		strictPort: true,
 		proxy: {
 			'/api': {
 				target: apiUrl,
