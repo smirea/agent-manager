@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { AppBar, Progress, Tabs } from '@skeletonlabs/skeleton-svelte';
 	import type {Agent, AgentEvent, HealthResponse} from '@repo/shared';
 
 	let health: HealthResponse | undefined = $state();
@@ -6,6 +7,7 @@
 	let commandOutput = $state('');
 	let events: AgentEvent[] = $state([]);
 	let error = $state('');
+	let backendProgress = $derived(health?.ok ? 100 : 25);
 
 	async function loadHealth() {
 		error = '';
@@ -49,215 +51,115 @@
 	<title>Agent Manager</title>
 </svelte:head>
 
-<main>
-	<section class="workspace">
-		<div>
-			<p class="eyebrow">Agent Manager</p>
-			<h1>Local agents, one browser-safe UI.</h1>
-		</div>
-		<button type="button" onclick={loadHealth}>Refresh API</button>
-	</section>
+<main class="min-h-screen bg-surface-100-900 text-surface-950-50">
+	<AppBar class="border-b border-surface-300-700 bg-surface-50-950">
+		<AppBar.Toolbar class="mx-auto flex max-w-6xl items-center justify-between gap-4 p-6">
+			<AppBar.Lead class="min-w-0">
+				<p class="text-xs font-bold uppercase text-primary-700-300">Agent Manager</p>
+				<h1 class="max-w-3xl text-4xl font-bold leading-none md:text-5xl">
+					Local agents, one browser-safe UI.
+				</h1>
+			</AppBar.Lead>
+			<AppBar.Trail>
+				<button class="btn preset-filled-primary-500" type="button" onclick={loadHealth}>Refresh API</button>
+			</AppBar.Trail>
+		</AppBar.Toolbar>
+	</AppBar>
 
-	{#if error}
-		<p class="error">{error}</p>
-	{/if}
+	<section class="mx-auto grid max-w-6xl gap-5 p-6">
+		{#if error}
+			<div class="card preset-filled-error-50-950 p-4">{error}</div>
+		{/if}
 
-	<section class="grid">
-		<div class="panel">
-			<h2>Backend</h2>
-			<dl>
-				<div>
-					<dt>Status</dt>
-					<dd>{health?.ok ? 'Connected' : 'Waiting'}</dd>
-				</div>
-				<div>
-					<dt>Runtime</dt>
-					<dd>{health?.runtime ?? 'unknown'}</dd>
-				</div>
-				<div>
-					<dt>Workspace</dt>
-					<dd>{health?.workspace ?? 'not loaded'}</dd>
-				</div>
-				<div>
-					<dt>Server time</dt>
-					<dd>{health?.now ?? 'not loaded'}</dd>
-				</div>
-			</dl>
-		</div>
+		<Tabs defaultValue="backend" class="grid gap-4">
+			<Tabs.List class="card flex gap-2 bg-surface-50-950 p-2 shadow-sm">
+				<Tabs.Trigger class="btn flex-1 data-[selected]:preset-filled-primary-500" value="backend">
+					Backend
+				</Tabs.Trigger>
+				<Tabs.Trigger class="btn flex-1 data-[selected]:preset-filled-primary-500" value="agents">
+					Agents
+				</Tabs.Trigger>
+				<Tabs.Trigger class="btn flex-1 data-[selected]:preset-filled-primary-500" value="events">
+					SSE stream
+				</Tabs.Trigger>
+			</Tabs.List>
 
-		<div class="panel">
-			<h2>Agents</h2>
-			{#each agents as agent}
-				<div class="agent">
+			<Tabs.Content class="card grid gap-5 bg-surface-50-950 p-5 shadow-sm" value="backend">
+				<div class="flex items-center justify-between gap-4">
+					<h2 class="text-xl font-bold">Backend</h2>
+					<span class="badge {health?.ok ? 'preset-filled-success-500' : 'preset-filled-warning-500'}">
+						{health?.ok ? 'Connected' : 'Waiting'}
+					</span>
+				</div>
+				<Progress value={backendProgress}>
+					<Progress.Track class="h-2 rounded-container bg-surface-200-800">
+						<Progress.Range class="h-full rounded-container preset-filled-success-500" />
+					</Progress.Track>
+				</Progress>
+				<dl class="grid gap-4 md:grid-cols-3">
 					<div>
-						<strong>{agent.name}</strong>
-						<span>{agent.command}</span>
+						<dt>Runtime</dt>
+						<dd>{health?.runtime ?? 'unknown'}</dd>
 					</div>
-					<small>{agent.status}</small>
-				</div>
-			{/each}
-			<button type="button" onclick={runDateCommand}>Run example command</button>
-			{#if commandOutput}
-				<pre>{commandOutput}</pre>
-			{/if}
-		</div>
+					<div>
+						<dt>Workspace</dt>
+						<dd>{health?.workspace ?? 'not loaded'}</dd>
+					</div>
+					<div>
+						<dt>Server time</dt>
+						<dd>{health?.now ?? 'not loaded'}</dd>
+					</div>
+				</dl>
+			</Tabs.Content>
 
-		<div class="panel stream">
-			<h2>SSE stream</h2>
-			{#each events as event}
-				<p><span>{event.type}</span> {event.now}</p>
-			{/each}
-		</div>
+			<Tabs.Content class="card grid gap-4 bg-surface-50-950 p-5 shadow-sm" value="agents">
+				<div class="flex items-center justify-between gap-4">
+					<h2 class="text-xl font-bold">Agents</h2>
+					<button class="btn preset-filled-primary-500" type="button" onclick={runDateCommand}>
+						Run example command
+					</button>
+				</div>
+				{#each agents as agent}
+					<div class="card flex items-center justify-between gap-4 bg-surface-100-900 p-4">
+						<div class="grid gap-1">
+							<strong>{agent.name}</strong>
+							<span class="text-sm text-surface-600-400">{agent.command}</span>
+						</div>
+						<span class="badge preset-filled-surface-200-800">{agent.status}</span>
+					</div>
+				{/each}
+				{#if commandOutput}
+					<pre class="overflow-auto rounded-container bg-surface-100-900 p-4">{commandOutput}</pre>
+				{/if}
+			</Tabs.Content>
+
+			<Tabs.Content class="card grid gap-3 bg-surface-50-950 p-5 shadow-sm" value="events">
+				<h2 class="text-xl font-bold">SSE stream</h2>
+				{#each events as event}
+					<div class="flex items-center justify-between gap-4 border-b border-surface-200-800 py-3">
+						<span class="badge preset-filled-primary-500">{event.type}</span>
+						<span class="font-mono text-sm">{event.now}</span>
+					</div>
+				{/each}
+			</Tabs.Content>
+		</Tabs>
 	</section>
 </main>
 
 <style>
 	:global(body) {
 		margin: 0;
-		background: #f6f5f1;
-		color: #1e2322;
 		font-family:
 			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	}
 
-	main {
-		box-sizing: border-box;
-		min-height: 100vh;
-		padding: 32px;
-	}
-
-	button {
-		align-self: start;
-		border: 1px solid #1e2322;
-		border-radius: 6px;
-		background: #1e2322;
-		color: white;
-		cursor: pointer;
-		font: inherit;
-		padding: 10px 14px;
-	}
-
-	.workspace {
-		align-items: end;
-		display: flex;
-		gap: 24px;
-		justify-content: space-between;
-		margin: 0 auto 28px;
-		max-width: 1100px;
-	}
-
-	.eyebrow {
-		color: #3b6f75;
-		font-size: 0.8rem;
-		font-weight: 700;
-		letter-spacing: 0;
-		margin: 0 0 8px;
-		text-transform: uppercase;
-	}
-
-	h1 {
-		font-size: clamp(2rem, 5vw, 4.4rem);
-		line-height: 1;
-		margin: 0;
-		max-width: 720px;
-	}
-
-	h2 {
-		font-size: 1rem;
-		margin: 0 0 18px;
-	}
-
-	.grid {
-		display: grid;
-		gap: 16px;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		margin: 0 auto;
-		max-width: 1100px;
-	}
-
-	.panel {
-		background: #ffffff;
-		border: 1px solid #ddd8cc;
-		border-radius: 8px;
-		box-sizing: border-box;
-		min-height: 280px;
-		padding: 20px;
-	}
-
-	dl {
-		display: grid;
-		gap: 14px;
-		margin: 0;
-	}
-
-	dl div {
-		display: grid;
-		gap: 4px;
-	}
-
-	dt,
-	small,
-	.agent span,
-	.stream span {
-		color: #6a6f6d;
+	dt {
+		color: var(--color-surface-600-400);
 		font-size: 0.82rem;
 	}
 
 	dd {
 		margin: 0;
 		overflow-wrap: anywhere;
-	}
-
-	.agent {
-		align-items: center;
-		border-bottom: 1px solid #ece7dc;
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 16px;
-		padding-bottom: 16px;
-	}
-
-	.agent div {
-		display: grid;
-		gap: 4px;
-	}
-
-	pre {
-		background: #f1efe8;
-		border-radius: 6px;
-		margin: 16px 0 0;
-		overflow: auto;
-		padding: 12px;
-	}
-
-	.stream p {
-		border-bottom: 1px solid #ece7dc;
-		margin: 0;
-		padding: 10px 0;
-	}
-
-	.error {
-		background: #fff0ed;
-		border: 1px solid #ec9b8a;
-		border-radius: 6px;
-		box-sizing: border-box;
-		margin: 0 auto 20px;
-		max-width: 1100px;
-		padding: 12px;
-	}
-
-	@media (max-width: 820px) {
-		main {
-			padding: 20px;
-		}
-
-		.workspace {
-			align-items: stretch;
-			display: grid;
-		}
-
-		.grid {
-			grid-template-columns: 1fr;
-		}
 	}
 </style>
