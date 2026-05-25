@@ -8,15 +8,25 @@
 	"type": "module",
 	"scripts": {
 		"build": "bun --filter @agent-manager/ui build && bun --filter @agent-manager/desktop build",
+		"desktop:build": "bun --filter @agent-manager/desktop build",
+		"desktop:dev": "bun --filter @agent-manager/desktop dev",
+		"desktop:typecheck": "bun --filter @agent-manager/desktop typecheck",
 		"dev:web": "concurrently -k -s first -n server,ui \"bun --filter @agent-manager/server dev\" \"bun --filter @agent-manager/ui dev --host 127.0.0.1\"",
 		"dev:electron": "concurrently -k -s first -n ui,electron \"bun --filter @agent-manager/ui dev --host 127.0.0.1\" \"bun scripts/wait-for-ui.ts && bun --filter @agent-manager/desktop dev\"",
 		"format": "oxfmt --write .",
 		"lint": "oxlint --fix && oxfmt --write .",
 		"prepare": "lefthook install",
+		"server:dev": "bun --filter @agent-manager/server dev",
+		"server:start": "bun --filter @agent-manager/server start",
+		"server:typecheck": "bun --filter @agent-manager/server typecheck",
 		"smoke:electron": "concurrently -k -s first -n ui,electron \"bun --filter @agent-manager/ui dev --host 127.0.0.1\" \"bun scripts/wait-for-ui.ts && bun scripts/run-electron-smoke.ts\"",
 		"start": "bun --filter @agent-manager/server start",
 		"test": "bun test --pass-with-no-tests",
-		"typecheck": "bun --filter @agent-manager/ui check && bun --filter @agent-manager/desktop typecheck && bun --filter @agent-manager/server typecheck"
+		"typecheck": "bun --filter @agent-manager/ui check && bun --filter @agent-manager/desktop typecheck && bun --filter @agent-manager/server typecheck",
+		"ui:build": "bun --filter @agent-manager/ui build",
+		"ui:check": "bun --filter @agent-manager/ui check",
+		"ui:dev": "bun --filter @agent-manager/ui dev --host 127.0.0.1",
+		"ui:preview": "bun --filter @agent-manager/ui preview"
 	},
 	"dependencies": {
 		"@agent-manager/shared": "workspace:*"
