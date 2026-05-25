@@ -1,5 +1,5 @@
 {
-	"name": "@agent-manager/ui",
+	"name": "@repo/ui",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -9,7 +9,7 @@
 		"preview": "bun --env-file=../../.env --env-file=../../.env.local --bun vite preview"
 	},
 	"dependencies": {
-		"@agent-manager/shared": "workspace:*",
+		"@repo/shared": "workspace:*",
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@sveltejs/kit": "^2.48.4",
 		"svelte": "^5.41.3",

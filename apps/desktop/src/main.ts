@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from 'electron';
-import env from '@agent-manager/shared/env';
+import env from '@repo/shared/env';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 

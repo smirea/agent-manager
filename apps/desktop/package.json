@@ -1,5 +1,5 @@
 {
-	"name": "@agent-manager/desktop",
+	"name": "@repo/desktop",
 	"private": true,
 	"type": "module",
 	"main": "out/main/main.js",
@@ -9,7 +9,7 @@
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
-		"@agent-manager/shared": "workspace:*",
+		"@repo/shared": "workspace:*",
 		"electron": "^39.1.2"
 	},
 	"devDependencies": {

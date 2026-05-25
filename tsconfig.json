@@ -12,7 +12,7 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"paths": {
-			"@agent-manager/shared": ["./packages/shared/src/index.ts"]
+			"@repo/shared": ["./packages/shared/src/index.ts"]
 		},
 		"skipLibCheck": true,
 		"strict": true,

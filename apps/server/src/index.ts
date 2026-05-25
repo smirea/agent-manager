@@ -1,5 +1,5 @@
-import env from '@agent-manager/shared/env';
-import type { Agent, AgentEvent, HealthResponse } from '@agent-manager/shared';
+import env from '@repo/shared/env';
+import type { Agent, AgentEvent, HealthResponse } from '@repo/shared';
 
 const host = '127.0.0.1';
 const port = env.PORT;

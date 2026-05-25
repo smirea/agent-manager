@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type {Agent, AgentEvent, HealthResponse} from '@agent-manager/shared';
+	import type {Agent, AgentEvent, HealthResponse} from '@repo/shared';
 
 	let health: HealthResponse | undefined = $state();
 	let agents: Agent[] = $state([]);

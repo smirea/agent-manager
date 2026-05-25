@@ -1,5 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import env from '@agent-manager/shared/env';
+import env from '@repo/shared/env';
 import { defineConfig } from 'vite';
 
 export default defineConfig({

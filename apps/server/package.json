@@ -1,5 +1,5 @@
 {
-	"name": "@agent-manager/server",
+	"name": "@repo/server",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -8,7 +8,7 @@
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
-		"@agent-manager/shared": "workspace:*"
+		"@repo/shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.14"

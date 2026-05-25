@@ -1,4 +1,4 @@
-const proc = Bun.spawn(['bun', '--filter', '@agent-manager/desktop', 'dev'], {
+const proc = Bun.spawn(['bun', '--filter', '@repo/desktop', 'dev'], {
 	env: {
 		...Bun.env,
 		SMOKE: 'true',

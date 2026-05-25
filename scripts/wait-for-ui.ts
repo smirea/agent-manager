@@ -1,4 +1,4 @@
-import env from '@agent-manager/shared/env';
+import env from '@repo/shared/env';
 
 const url = `http://127.0.0.1:${env.UI_PORT}`;
 
