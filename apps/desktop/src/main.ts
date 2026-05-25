@@ -4,10 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 let serverProcess: ChildProcess | undefined;
 
-const rootDir = fileURLToPath(new URL('../../..', import.meta.url));
-const serverDir = fileURLToPath(new URL('../../server', import.meta.url));
-const uiUrl = process.env.AGENT_MANAGER_UI_URL ?? 'http://127.0.0.1:5173';
-const serverUrl = process.env.AGENT_MANAGER_SERVER_URL ?? 'http://127.0.0.1:3031';
+const serverDir = fileURLToPath(new URL('../../../server', import.meta.url));
+const uiUrl = process.env.AGENT_MANAGER_UI_URL ?? 'http://agent-manager.localhost';
+const serverUrl = process.env.AGENT_MANAGER_SERVER_URL ?? 'http://127.0.0.1:6051';
 const smoke = process.env.AGENT_MANAGER_SMOKE === '1';
 
 function startServer() {
@@ -15,11 +14,11 @@ function startServer() {
 		return;
 	}
 
-	serverProcess = spawn('bun', ['--cwd', serverDir, 'run', 'dev'], {
-		cwd: rootDir,
+	serverProcess = spawn('bun', ['run', 'dev'], {
+		cwd: serverDir,
 		env: {
 			...process.env,
-			AGENT_MANAGER_PORT: '3031',
+			AGENT_MANAGER_PORT: process.env.AGENT_MANAGER_PORT ?? '6051',
 		},
 		stdio: 'inherit',
 	});

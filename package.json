@@ -8,12 +8,12 @@
 	"type": "module",
 	"scripts": {
 		"build": "bun --filter @agent-manager/ui build && bun --filter @agent-manager/desktop build",
-		"dev:web": "concurrently -k -s first -n server,ui \"bun --filter @agent-manager/server dev\" \"bun --filter @agent-manager/ui dev --host 127.0.0.1\"",
-		"dev:electron": "concurrently -k -s first -n ui,electron \"bun --filter @agent-manager/ui dev --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && bun --filter @agent-manager/desktop dev\"",
+		"dev:web": "concurrently -k -s first -n server,ui \"AGENT_MANAGER_PORT=6051 bun --filter @agent-manager/server dev\" \"AGENT_MANAGER_UI_PORT=6050 AGENT_MANAGER_API_URL=http://agent-manager-api.localhost bun --filter @agent-manager/ui dev --host 127.0.0.1 --port 6050 --strictPort\"",
+		"dev:electron": "concurrently -k -s first -n ui,electron \"AGENT_MANAGER_UI_PORT=6050 AGENT_MANAGER_API_URL=http://agent-manager-api.localhost bun --filter @agent-manager/ui dev --host 127.0.0.1 --port 6050 --strictPort\" \"wait-on http://127.0.0.1:6050 && AGENT_MANAGER_PORT=6051 bun --filter @agent-manager/desktop dev\"",
 		"format": "oxfmt --write .",
 		"lint": "oxlint --fix && oxfmt --write .",
 		"prepare": "lefthook install",
-		"smoke:electron": "concurrently -k -s first -n ui,electron \"bun --filter @agent-manager/ui dev --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && AGENT_MANAGER_SMOKE=1 bun --filter @agent-manager/desktop dev\"",
+		"smoke:electron": "concurrently -k -s first -n ui,electron \"AGENT_MANAGER_UI_PORT=6050 AGENT_MANAGER_API_URL=http://agent-manager-api.localhost bun --filter @agent-manager/ui dev --host 127.0.0.1 --port 6050 --strictPort\" \"wait-on http://127.0.0.1:6050 && AGENT_MANAGER_PORT=6051 AGENT_MANAGER_SMOKE=1 bun --filter @agent-manager/desktop dev\"",
 		"start": "bun --filter @agent-manager/server start",
 		"test": "bun test --pass-with-no-tests",
 		"typecheck": "bun --filter @agent-manager/ui check && bun --filter @agent-manager/desktop typecheck && bun --filter @agent-manager/server typecheck"
