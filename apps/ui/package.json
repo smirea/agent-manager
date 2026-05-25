@@ -16,7 +16,11 @@
 		"vite": "^7.1.12"
 	},
 	"devDependencies": {
+		"@skeletonlabs/skeleton": "^4.15.2",
+		"@skeletonlabs/skeleton-svelte": "^4.15.2",
+		"@tailwindcss/vite": "^4.3.0",
 		"svelte-check": "^4.3.3",
+		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.3"
 	}
 }

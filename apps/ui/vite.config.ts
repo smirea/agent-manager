@@ -1,9 +1,10 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import env from '@repo/shared/env';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [tailwindcss(), sveltekit()],
 	server: {
 		allowedHosts: ['agent-manager.localhost'],
 		port: env.UI_PORT,
