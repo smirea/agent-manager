@@ -6,7 +6,7 @@ let serverProcess: ChildProcess | undefined;
 
 const serverDir = fileURLToPath(new URL('../../../server', import.meta.url));
 const uiUrl = process.env.UI_URL ?? 'http://agent-manager.localhost';
-const serverUrl = process.env.INTERNAL_SERVER_URL ?? process.env.SERVER_URL ?? 'http://127.0.0.1:6051';
+const serverUrl = process.env.SERVER_URL ?? 'http://127.0.0.1:6051';
 const smoke = process.env.SMOKE === '1';
 
 function startServer() {
