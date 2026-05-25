@@ -138,7 +138,7 @@
 				{#each events as event}
 					<div class="flex items-center justify-between gap-4 border-b border-surface-200-800 py-3">
 						<span class="badge preset-filled-primary-500">{event.type}</span>
-						<span class="text-sm">{event.now}</span>
+						<span class="font-mono text-sm">{event.now}</span>
 					</div>
 				{/each}
 			</Tabs.Content>

@@ -9,6 +9,7 @@
 		"preview": "bun --env-file=../../.env --env-file=../../.env.local --bun vite preview"
 	},
 	"dependencies": {
+		"@fontsource-variable/google-sans-code": "^5.2.4",
 		"@fontsource-variable/google-sans-flex": "^5.2.3",
 		"@repo/shared": "workspace:*",
 		"@sveltejs/adapter-static": "^3.0.9",
