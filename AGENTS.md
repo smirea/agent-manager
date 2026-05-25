@@ -18,10 +18,6 @@
 
 - Environment files are managed by `env-manager`.
 - Keep `.env` tracked with harmless/default values and `.env.local` ignored for local values.
-- Run `env-manager up` after changing env schema/values that should be saved.
-- Generate the shared env module directly with `env-manager ts packages/shared/src/env.ts --force`.
-- Package scripts intentionally pass `--env-file=../../.env --env-file=../../.env.local` where needed so generated env validation sees the right values.
-- Keep env names concise for this repo, e.g. `UI_URL`, `SERVER_URL`, `UI_PORT`, `PORT`, `SMOKE`, `SKIP_SERVER`.
 
 # Local Dev Hosts
 
@@ -35,10 +31,3 @@
 - The active Skeleton theme is the local generated theme at `apps/ui/src/routes/theme.css`, applied via `data-theme="theme"` in `apps/ui/src/app.html`.
 - `@skeletonlabs/skeleton-svelte` is excluded from Vite dependency optimization because its package imports internal `.svelte` files that esbuild cannot prebundle.
 - `skipLibCheck` is enabled for the UI because Skeleton's published declarations currently create third-party declaration noise under `svelte-check`.
-
-# Verification
-
-- Standard checks: `bun run lint`, `bun run typecheck`, `bun run build`, `bun run test`.
-- Browser smoke should hit `http://agent-manager.localhost` or `https://agent-manager.localhost` and verify same-origin `/api/*` requests.
-- Electron smoke: `bun run smoke:electron`.
-- If browser DevTools shows `agent-manager-api.localhost`, check stale tabs, DevTools overrides, preserved logs, or extensions. Current app code should only call relative `/api/*` paths.
