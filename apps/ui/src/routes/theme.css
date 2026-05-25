@@ -2,8 +2,9 @@
 	--text-scaling: 1.067;
 	--base-font-color: var(--color-surface-950);
 	--base-font-color-dark: var(--color-surface-50);
-	--base-font-family: 'Google Sans Flex Variable', ui-sans-serif, system-ui, sans-serif;
-	--code-font-family: 'Google Sans Code Variable', ui-monospace, monospace;
+	--base-font-family: 'Google Sans Flex Variable';
+	--code-font-family: 'Google Sans Code Variable';
+	--font-sans: var(--base-font-family);
 	--font-mono: var(--code-font-family);
 	--base-font-size: inherit;
 	--base-line-height: inherit;
