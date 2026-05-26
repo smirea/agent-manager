@@ -1,41 +1,28 @@
 import env from '@repo/shared/env';
 import type { AgentEvent } from '@repo/shared';
-import fs from 'fs';
-import path from 'path';
+import { RPCHandler } from '@orpc/server/fetch';
+import { CORSPlugin } from '@orpc/server/plugins';
+import { router } from './rpc';
 
 const uiBuildPath = new URL('../../ui/build/', import.meta.url);
 
 const encoder = new TextEncoder();
-const grokDir = path.join(process.env.HOME!, '.grok');
-const grokProjectsDir = path.join(grokDir, 'sessions');
+const rpcHandler = new RPCHandler(router, {
+	plugins: [
+		new CORSPlugin({
+			origin: '*',
+			allowMethods: ['GET', 'POST', 'OPTIONS'],
+			allowHeaders: ['content-type', 'authorization'],
+		}),
+	],
+});
 
 const server = Bun.serve({
 	port: env.PORT,
 	routes: {
 		'/api/events': () => sse(),
-		'/api/sessions': async () => {
-			const result: any[] = [];
-			const projects = (await listDir(grokProjectsDir)).filter(x => fs.statSync(x).isDirectory());
-			for (const dir of projects) {
-				result.push({
-					path: dir,
-					name: decodeURIComponent(dir)
-						.slice(grokProjectsDir.length + 1)
-						.replace(process.env.HOME! + path.sep, ''),
-					sessions: await Promise.all(
-						(await listDir(dir))
-							.filter(x => fs.statSync(x).isDirectory())
-							.map(async dir => ({
-								path: dir,
-								summary: JSON.parse((await fs.promises.readFile(path.join(dir, 'summary.json'))).toString()),
-							})),
-					),
-				});
-			}
-			return json(result);
-		},
 	},
-	fetch(request) {
+	async fetch(request) {
 		const url = new URL(request.url);
 
 		if (request.method === 'OPTIONS') {
@@ -48,20 +35,18 @@ const server = Bun.serve({
 			});
 		}
 
+		const { matched, response } = await rpcHandler.handle(request, {
+			prefix: '/api/rpc',
+			context: {},
+		});
+
+		if (matched) {
+			return response;
+		}
+
 		return staticFile(url.pathname);
 	},
 });
-
-const listDir = async (root: string) => (await fs.promises.readdir(root)).map(x => path.join(root, x));
-
-const json = (data: unknown, init?: ResponseInit) =>
-	Response.json(data, {
-		...init,
-		headers: {
-			'access-control-allow-origin': '*',
-			...init?.headers,
-		},
-	});
 
 function sseEvent(event: AgentEvent) {
 	return encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);

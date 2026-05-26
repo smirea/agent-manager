@@ -2,12 +2,16 @@
 	"name": "@repo/server",
 	"private": true,
 	"type": "module",
+	"exports": {
+		"./rpc": "./src/rpc.ts"
+	},
 	"scripts": {
 		"dev": "bun --env-file=../../.env --env-file=../../.env.local --watch src/index.ts",
 		"start": "bun --env-file=../../.env --env-file=../../.env.local src/index.ts",
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
+		"@orpc/server": "^1.14.3",
 		"@repo/shared": "workspace:*"
 	},
 	"devDependencies": {
