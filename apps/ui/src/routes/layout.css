@@ -5,8 +5,27 @@
 @theme {
 	--font-sans: 'Google Sans Flex Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Google Sans Code Variable', ui-monospace, monospace;
-	--color-app: oklch(97% 0.004 255deg);
-	--color-app-ink: oklch(17.76% 0 none);
+	--color-app: var(--theme-app);
+	--color-app-ink: var(--theme-app-ink);
+	--color-panel: var(--theme-panel);
+	--color-panel-ink: var(--theme-panel-ink);
+	--color-border: var(--theme-border);
+	--color-error: var(--theme-error);
+	--color-error-bg: var(--theme-error-bg);
+	--color-error-border: var(--theme-error-border);
+	--color-error-fg: var(--theme-error-fg);
+	--color-warn: var(--theme-warn);
+	--color-warn-bg: var(--theme-warn-bg);
+	--color-warn-border: var(--theme-warn-border);
+	--color-warn-fg: var(--theme-warn-fg);
+	--color-info: var(--theme-info);
+	--color-info-bg: var(--theme-info-bg);
+	--color-info-border: var(--theme-info-border);
+	--color-info-fg: var(--theme-info-fg);
+	--color-success: var(--theme-success);
+	--color-success-bg: var(--theme-success-bg);
+	--color-success-border: var(--theme-success-border);
+	--color-success-fg: var(--theme-success-fg);
 }
 
 :where(html, body, button, input, textarea, select) {
@@ -15,4 +34,52 @@
 
 :where(pre, code, kbd, samp) {
 	font-family: var(--font-mono);
+}
+
+main[data-theme='light'] {
+	--theme-app: var(--color-slate-50);
+	--theme-app-ink: var(--color-slate-950);
+	--theme-panel: var(--color-white);
+	--theme-panel-ink: var(--color-slate-950);
+	--theme-border: var(--color-slate-200);
+	--theme-error: var(--color-red-600);
+	--theme-error-bg: var(--color-red-50);
+	--theme-error-border: var(--color-red-200);
+	--theme-error-fg: var(--color-red-900);
+	--theme-warn: var(--color-yellow-500);
+	--theme-warn-bg: var(--color-yellow-50);
+	--theme-warn-border: var(--color-yellow-200);
+	--theme-warn-fg: var(--color-yellow-950);
+	--theme-info: var(--color-blue-600);
+	--theme-info-bg: var(--color-blue-50);
+	--theme-info-border: var(--color-blue-200);
+	--theme-info-fg: var(--color-blue-900);
+	--theme-success: var(--color-green-600);
+	--theme-success-bg: var(--color-green-50);
+	--theme-success-border: var(--color-green-200);
+	--theme-success-fg: var(--color-green-900);
+}
+
+main[data-theme='dark'] {
+	--theme-app: var(--color-slate-950);
+	--theme-app-ink: var(--color-slate-50);
+	--theme-panel: var(--color-slate-900);
+	--theme-panel-ink: var(--color-slate-50);
+	--theme-border: var(--color-slate-800);
+	--theme-error: var(--color-red-400);
+	--theme-error-bg: var(--color-red-950);
+	--theme-error-border: var(--color-red-800);
+	--theme-error-fg: var(--color-red-100);
+	--theme-warn: var(--color-yellow-300);
+	--theme-warn-bg: var(--color-yellow-950);
+	--theme-warn-border: var(--color-yellow-800);
+	--theme-warn-fg: var(--color-yellow-100);
+	--theme-info: var(--color-blue-400);
+	--theme-info-bg: var(--color-blue-950);
+	--theme-info-border: var(--color-blue-800);
+	--theme-info-fg: var(--color-blue-100);
+	--theme-success: var(--color-green-400);
+	--theme-success-bg: var(--color-green-950);
+	--theme-success-border: var(--color-green-800);
+	--theme-success-fg: var(--color-green-100);
 }

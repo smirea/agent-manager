@@ -6,7 +6,7 @@
 	<title>Grok Build</title>
 </svelte:head>
 
-<main class="min-h-screen bg-app text-app-ink">
+<main class="min-h-screen bg-app text-app-ink" data-theme="light">
 	test
 </main>
 
