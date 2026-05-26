@@ -5,6 +5,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	optimizeDeps: {
+		exclude: ['@tanstack/svelte-query'],
+	},
 	server: {
 		allowedHosts: ['agent-manager.localhost'],
 		port: env.UI_PORT,

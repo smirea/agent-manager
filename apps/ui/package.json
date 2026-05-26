@@ -12,9 +12,11 @@
 		"@fontsource-variable/google-sans-code": "^5.2.4",
 		"@fontsource-variable/google-sans-flex": "^5.2.3",
 		"@orpc/client": "^1.14.3",
+		"@orpc/tanstack-query": "^1.14.3",
 		"@repo/shared": "workspace:*",
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@sveltejs/kit": "^2.48.4",
+		"@tanstack/svelte-query": "^6.1.33",
 		"svelte": "^5.41.3",
 		"vite": "^7.1.12"
 	},

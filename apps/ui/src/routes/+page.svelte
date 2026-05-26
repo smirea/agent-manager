@@ -1,21 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { orpc } from '$lib/orpc';
+	import { createQuery } from '@tanstack/svelte-query';
 
 	let theme = $state<'light' | 'dark'>('light');
-	let projects = $state<Awaited<ReturnType<typeof orpc.sessions.list>>>([]);
-	let loading = $state(true);
-	let error = $state<string | null>(null);
+	const sessionsQuery = createQuery(() => orpc.sessions.list.queryOptions());
+	let projects = $derived(sessionsQuery.data ?? []);
 
-	onMount(async () => {
-		try {
-			projects = await orpc.sessions.list();
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'Failed to load sessions';
-		} finally {
-			loading = false;
-		}
-	});
+	const errorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Failed to load sessions');
 </script>
 
 <svelte:head>
@@ -27,7 +18,7 @@
 		<header class="flex items-center justify-between gap-4">
 			<div>
 				<h1 class="text-2xl font-semibold">Agent Manager</h1>
-				<p class="text-sm text-panel-ink/70">Sessions loaded through a typed oRPC client.</p>
+				<p class="text-sm text-panel-ink/70">Sessions loaded through oRPC and TanStack Query.</p>
 			</div>
 			<button
 				class="rounded-md border border-border bg-panel px-3 py-2 text-sm text-panel-ink"
@@ -42,10 +33,10 @@
 				<h2 class="text-sm font-medium">Grok sessions</h2>
 			</div>
 
-			{#if loading}
+			{#if sessionsQuery.isPending}
 				<p class="px-4 py-6 text-sm text-panel-ink/70">Loading sessions...</p>
-			{:else if error}
-				<p class="px-4 py-6 text-sm text-error">{error}</p>
+			{:else if sessionsQuery.isError}
+				<p class="px-4 py-6 text-sm text-error">{errorMessage(sessionsQuery.error)}</p>
 			{:else if projects.length === 0}
 				<p class="px-4 py-6 text-sm text-panel-ink/70">No sessions found.</p>
 			{:else}
