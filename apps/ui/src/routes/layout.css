@@ -2,7 +2,7 @@
 @import '@fontsource-variable/google-sans-code/wght.css';
 @import 'tailwindcss';
 
-@theme {
+@theme inline {
 	--font-sans: 'Google Sans Flex Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Google Sans Code Variable', ui-monospace, monospace;
 	--color-app: var(--theme-app);
@@ -34,6 +34,30 @@
 
 :where(pre, code, kbd, samp) {
 	font-family: var(--font-mono);
+}
+
+main[data-theme] {
+	--color-app: var(--theme-app);
+	--color-app-ink: var(--theme-app-ink);
+	--color-panel: var(--theme-panel);
+	--color-panel-ink: var(--theme-panel-ink);
+	--color-border: var(--theme-border);
+	--color-error: var(--theme-error);
+	--color-error-bg: var(--theme-error-bg);
+	--color-error-border: var(--theme-error-border);
+	--color-error-fg: var(--theme-error-fg);
+	--color-warn: var(--theme-warn);
+	--color-warn-bg: var(--theme-warn-bg);
+	--color-warn-border: var(--theme-warn-border);
+	--color-warn-fg: var(--theme-warn-fg);
+	--color-info: var(--theme-info);
+	--color-info-bg: var(--theme-info-bg);
+	--color-info-border: var(--theme-info-border);
+	--color-info-fg: var(--theme-info-fg);
+	--color-success: var(--theme-success);
+	--color-success-bg: var(--theme-success-bg);
+	--color-success-border: var(--theme-success-border);
+	--color-success-fg: var(--theme-success-fg);
 }
 
 main[data-theme='light'] {
