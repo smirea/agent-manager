@@ -1,31 +1,67 @@
 import env from '@repo/shared/env';
-import type { Agent, AgentEvent, HealthResponse } from '@repo/shared';
+import type { AgentEvent } from '@repo/shared';
+import fs from 'fs';
+import path from 'path';
 
-const host = '127.0.0.1';
-const port = env.PORT;
-const workspace = process.cwd();
 const uiBuildPath = new URL('../../ui/build/', import.meta.url);
 
-const agents: Agent[] = [
-	{
-		id: 'local-shell',
-		name: 'Local shell',
-		command: 'date',
-		status: 'idle',
-	},
-];
-
 const encoder = new TextEncoder();
+const grokDir = path.join(process.env.HOME!, '.grok');
+const grokProjectsDir = path.join(grokDir, 'sessions');
 
-function json(data: unknown, init?: ResponseInit) {
-	return Response.json(data, {
+const server = Bun.serve({
+	port: env.PORT,
+	routes: {
+		'/api/events': () => sse(),
+		'/api/sessions': async () => {
+			const result: any[] = [];
+			const projects = (await listDir(grokProjectsDir)).filter(x => fs.statSync(x).isDirectory());
+			for (const dir of projects) {
+				result.push({
+					path: dir,
+					name: decodeURIComponent(dir)
+						.slice(grokProjectsDir.length + 1)
+						.replace(process.env.HOME! + path.sep, ''),
+					sessions: await Promise.all(
+						(await listDir(dir))
+							.filter(x => fs.statSync(x).isDirectory())
+							.map(async dir => ({
+								path: dir,
+								summary: JSON.parse((await fs.promises.readFile(path.join(dir, 'summary.json'))).toString()),
+							})),
+					),
+				});
+			}
+			return json(result);
+		},
+	},
+	fetch(request) {
+		const url = new URL(request.url);
+
+		if (request.method === 'OPTIONS') {
+			return new Response(null, {
+				headers: {
+					'access-control-allow-headers': 'content-type, authorization',
+					'access-control-allow-methods': 'GET, POST, OPTIONS',
+					'access-control-allow-origin': '*',
+				},
+			});
+		}
+
+		return staticFile(url.pathname);
+	},
+});
+
+const listDir = async (root: string) => (await fs.promises.readdir(root)).map(x => path.join(root, x));
+
+const json = (data: unknown, init?: ResponseInit) =>
+	Response.json(data, {
+		...init,
 		headers: {
 			'access-control-allow-origin': '*',
 			...init?.headers,
 		},
-		status: init?.status,
 	});
-}
 
 function sseEvent(event: AgentEvent) {
 	return encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
@@ -58,25 +94,6 @@ function sse() {
 	});
 }
 
-async function runCommand() {
-	const proc = Bun.spawn(['date'], {
-		cwd: workspace,
-		stdout: 'pipe',
-		stderr: 'pipe',
-	});
-	const [output, errorOutput, exitCode] = await Promise.all([
-		new Response(proc.stdout).text(),
-		new Response(proc.stderr).text(),
-		proc.exited,
-	]);
-
-	return json({
-		command: 'date',
-		exitCode,
-		output: output.trim() || errorOutput.trim(),
-	});
-}
-
 async function staticFile(pathname: string) {
 	const path = pathname === '/' ? '/index.html' : pathname;
 	const file = Bun.file(new URL(`.${path}`, uiBuildPath));
@@ -95,46 +112,4 @@ async function staticFile(pathname: string) {
 	});
 }
 
-Bun.serve({
-	fetch(request) {
-		const url = new URL(request.url);
-
-		if (request.method === 'OPTIONS') {
-			return new Response(null, {
-				headers: {
-					'access-control-allow-headers': 'content-type, authorization',
-					'access-control-allow-methods': 'GET, POST, OPTIONS',
-					'access-control-allow-origin': '*',
-				},
-			});
-		}
-
-		if (url.pathname === '/api/health') {
-			const body: HealthResponse = {
-				ok: true,
-				runtime: 'bun',
-				now: new Date().toISOString(),
-				workspace,
-			};
-			return json(body);
-		}
-
-		if (url.pathname === '/api/agents') {
-			return json({ agents });
-		}
-
-		if (url.pathname === '/api/commands/date' && request.method === 'POST') {
-			return runCommand();
-		}
-
-		if (url.pathname === '/api/events') {
-			return sse();
-		}
-
-		return staticFile(url.pathname);
-	},
-	hostname: host,
-	port,
-});
-
-console.log(`agent-manager server listening on http://${host}:${port}`);
+console.log(`server listening on http://${server.hostname}:${server.port}`);

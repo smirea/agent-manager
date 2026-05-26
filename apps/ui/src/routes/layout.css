@@ -2,6 +2,10 @@
 @import '@fontsource-variable/google-sans-code/wght.css';
 @import 'tailwindcss';
 
+:global(body) {
+	margin: 0;
+}
+
 @theme inline {
 	--font-sans: 'Google Sans Flex Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Google Sans Code Variable', ui-monospace, monospace;
