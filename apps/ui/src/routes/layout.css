@@ -30,14 +30,19 @@
 	--color-success-bg: var(--theme-success-bg);
 	--color-success-border: var(--theme-success-border);
 	--color-success-fg: var(--theme-success-fg);
+
+	--color-app-g: var(--theme-g-app-bg);
+	--color-g-text: var(--theme-g-text);
 }
 
-:where(html, body, button, input, textarea, select) {
-	font-family: var(--font-sans);
-}
+@layer base {
+	:where(html, body, button, input, textarea, select) {
+		font-family: var(--font-sans);
+	}
 
-:where(pre, code, kbd, samp) {
-	font-family: var(--font-mono);
+	:where(pre, code, kbd, samp) {
+		font-family: var(--font-mono);
+	}
 }
 
 main[data-theme] {
@@ -62,6 +67,11 @@ main[data-theme] {
 	--color-success-bg: var(--theme-success-bg);
 	--color-success-border: var(--theme-success-border);
 	--color-success-fg: var(--theme-success-fg);
+
+	--theme-g-app-bg: #141414;
+	--theme-g-text: #c8c8c8;
+	--theme-g-border: #505059;
+	--theme-g-border-faded: #323237;
 }
 
 main[data-theme='light'] {

@@ -40,9 +40,7 @@ const server = Bun.serve({
 			context: {},
 		});
 
-		if (matched) {
-			return response;
-		}
+		if (matched) return response;
 
 		return staticFile(url.pathname);
 	},
