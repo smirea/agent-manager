@@ -3,7 +3,9 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./rpc": "./src/rpc.ts"
+		".": "./src/index.ts",
+		"./rpc": "./src/rpc.ts",
+		"./package.json": "./package.json"
 	},
 	"scripts": {
 		"dev": "bun --env-file=../../.env --env-file=../../.env.local --watch src/index.ts",
@@ -11,6 +13,7 @@
 		"typecheck": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
+		"@agentclientprotocol/sdk": "^0.22.1",
 		"@orpc/server": "^1.14.3",
 		"@repo/shared": "workspace:*"
 	},
