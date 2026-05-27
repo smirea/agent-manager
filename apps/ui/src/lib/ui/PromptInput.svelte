@@ -1,48 +1,36 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	const { ...rest }: HTMLInputAttributes = $props();
+	let { value = $bindable(''), class: cn, ...rest }: HTMLInputAttributes = $props();
 </script>
 
-<div class="root relative">
-	<input {...rest} type="text" class="py-1 px-2 font-mono" />
-	<div class="bottom flex items-center absolute left-0 right-0 bottom-0 text-sm">
-		<div class="border flex-1"></div>
-		<div class="label mx-2">Grok Build</div>
-		<div class="border w-4"></div>
+<fieldset class="root rotate-180">
+	<legend class="rotate-180 mx-4 px-1 text-xs">Grok Build</legend>
+	<div class="rotate-180 w-full flex pt-1.5 px-2 text-sm">
+		<div class="flex-0 font-mono mr-1 chevron">❭</div>
+		<input {...rest} bind:value class={[cn, 'outline-none font-mono w-full']} />
 	</div>
-</div>
+</fieldset>
 
 <style>
 	.root {
-		--border-color: var(--theme-g-border-faded);
-		border: 1px solid var(--border-color);
-		border-bottom-color: transparent;
-		border-radius: 4px;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.root:focus-within {
-		--border-color: var(--theme-g-border) !important;
-	}
-
-	input {
-		flex: 1 1 0;
-		outline: none;
-	}
-
-	.bottom {
-		transform: translateY(calc(50%));
-	}
-
-	.border {
-		border: 0;
-		border-top: 1px solid var(--border-color);
-	}
-
-	.label {
+		--border: var(--theme-g-border-faded);
+		--text: var(--theme-g-text-faded);
 		position: relative;
-		color: var(--border-color);
+	}
+	.root:focus-within {
+		--border: var(--theme-g-border);
+		--text: var(--theme-g-text);
+	}
+	fieldset {
+		border: 1px solid var(--border);
+		border-radius: 4px;
+	}
+	legend {
+		color: var(--border);
+	}
+	input,
+	.chevron {
+		color: var(--text);
 	}
 </style>

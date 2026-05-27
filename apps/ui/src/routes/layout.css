@@ -70,6 +70,7 @@ main[data-theme] {
 
 	--theme-g-app-bg: #141414;
 	--theme-g-text: #c8c8c8;
+	--theme-g-text-faded: #9b9b9b;
 	--theme-g-border: #505059;
 	--theme-g-border-faded: #323237;
 }
