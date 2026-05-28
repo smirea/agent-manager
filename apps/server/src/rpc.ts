@@ -1,6 +1,6 @@
 import { ORPCError, os } from '@orpc/server';
 import { promiseAllObject } from '@repo/shared';
-import type { GrokSessionUpdate, GrokSessionUpdateJsonMessage } from '@repo/shared';
+import type { GrokSessionUpdateJsonMessage } from '@repo/shared';
 import fs from 'fs';
 import path from 'path';
 import z from 'zod';
@@ -73,8 +73,8 @@ export const router = {
 					updates: (
 						await readJsonL<GrokSessionUpdateJsonMessage>(path.join(match.path, 'updates.jsonl'))
 					).map(message => {
-						delete (message.params.update as any)._meta;
-						return message.params.update;
+						// delete (message.params.update as any)._meta;
+						return { ...message.params.update, _meta: message.params._meta };
 					}),
 				})),
 			};

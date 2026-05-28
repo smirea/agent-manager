@@ -57,7 +57,7 @@
 	.root {
 		--bg: var(--theme-g-app-bg);
 		--text: var(--theme-g-text);
-		padding: 1rem;
+		padding: 1rem 0;
 		width: 100%;
 		min-height: 100vh;
 		overflow: hidden;

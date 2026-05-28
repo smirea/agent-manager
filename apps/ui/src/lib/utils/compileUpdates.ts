@@ -8,17 +8,19 @@ import type {
 import type * as acp from '@agentclientprotocol/sdk';
 
 type Tool = Merge<Merge<GrokToolCall, GrokToolCallUpdate>, { type: 'tool'; sessionUpdate: 'tool' }>;
-type Message =
-	| { role: 'user'; id?: string; text: string }
-	| {
-			role: 'agent';
-			id?: string;
-			content: Array<
-				| Tool
-				| Merge<AcpAgentMessageChunkUpdate['content'] & { type: 'text' }, { thinking?: boolean }>
-				| Exclude<AcpAgentMessageChunkUpdate['content'], { type: 'text' }>
-			>;
-	  };
+type ClankerContent =
+	| Tool
+	| Merge<
+			AcpAgentMessageChunkUpdate['content'] & { type: 'text' },
+			{ thinking?: boolean; thinkingDurationSec?: number }
+	  >
+	| Exclude<AcpAgentMessageChunkUpdate['content'], { type: 'text' }>;
+export type ClankerMessage = {
+	role: 'clanker';
+	id?: string;
+	content: ClankerContent[];
+};
+type Message = { role: 'user'; id?: string; text: string } | ClankerMessage;
 
 export default function compileUpdates(updates: GrokSessionUpdate[]) {
 	const result = {
@@ -35,6 +37,8 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 	};
 
 	const tools: Record<string, number> = {};
+
+	console.info(updates);
 
 	for (const item of updates) {
 		switch (item.sessionUpdate) {
@@ -63,6 +67,7 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 	Object.values(tools).forEach(index => Object.assign(result.list[index], { type: 'tool', sessionUpdate: 'tool' }));
 	const l = <T>(a: T[]) => a[a.length - 1];
 
+	let lastThinkingTime = 0;
 	for (const [index, item] of result.list.entries()) {
 		let last = l(result.chat);
 		switch (item.sessionUpdate) {
@@ -85,11 +90,22 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 				break;
 			case 'agent_thought_chunk':
 			case 'agent_message_chunk':
-				const content =
-					item.content.type === 'text'
-						? ({ ...item.content, thinking: item.sessionUpdate === 'agent_thought_chunk' } as const)
-						: item.content;
-				if (last.role === 'agent') {
+				const content: ClankerContent = item.content;
+				if (content.type === 'text' && item.sessionUpdate === 'agent_thought_chunk') {
+					content.thinking = true;
+					const { agentTimestampMs, turnStartMs } = (item._meta || {}) as {
+						agentTimestampMs?: number;
+						turnStartMs?: number;
+						streamStartMs?: number;
+					};
+					if (lastThinkingTime === 0 && agentTimestampMs && turnStartMs) {
+						content.thinkingDurationSec = Math.round((agentTimestampMs - turnStartMs) / 100) / 10;
+						lastThinkingTime = agentTimestampMs;
+					} else if (agentTimestampMs) {
+						content.thinkingDurationSec = Math.round((lastThinkingTime - agentTimestampMs) / 100) / 10;
+					}
+				}
+				if (last.role === 'clanker') {
 					const lc = l(last.content);
 					if (lc.type === 'text' && content.type === 'text' && !!lc.thinking === content.thinking) {
 						lc.text += content.text;
@@ -97,15 +113,16 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 						last.content.push(content);
 					}
 				} else {
+					lastThinkingTime = 0;
 					result.chat.push({
-						role: 'agent',
+						role: 'clanker',
 						id: item.messageId || undefined,
 						content: [content],
 					});
 				}
 				break;
 			case 'tool':
-				if (last.role !== 'agent') {
+				if (last.role !== 'clanker') {
 					console.warn('TODO: tool call but agent is not last message, this should not happen at index=', index);
 					break;
 				}
