@@ -1,7 +1,7 @@
 import env from '@repo/shared/env';
-import type { AgentEvent } from '@repo/shared';
 import { RPCHandler } from '@orpc/server/fetch';
 import { CORSPlugin } from '@orpc/server/plugins';
+import { ORPCError, onError } from '@orpc/server';
 import { router } from './rpc';
 
 const uiBuildPath = new URL('../../ui/build/', import.meta.url);
@@ -13,6 +13,27 @@ const rpcHandler = new RPCHandler(router, {
 			origin: '*',
 			allowMethods: ['GET', 'POST', 'OPTIONS'],
 			allowHeaders: ['content-type', 'authorization'],
+		}),
+	],
+	interceptors: [
+		onError(async (error, _options) => {
+			console.error(error);
+			const e: any = error;
+			const isDefined = error instanceof ORPCError;
+			throw new ORPCError(isDefined ? error.code : 'INTERNAL_SERVER_ERROR', {
+				status: isDefined ? error.status : undefined,
+				message: e?.message || (error as any)?.message || 'Internal server error',
+				data: {
+					...(isDefined ? error.data : {}),
+					name: e?.name,
+					message: e?.message,
+					stack: e?.stack ?? (error as any)?.stack,
+					cause: e?.cause,
+					...(e && typeof e === 'object'
+						? Object.fromEntries(Object.entries(e).filter(([k]) => !['name', 'message', 'stack', 'cause'].includes(k)))
+						: { value: e }),
+				},
+			});
 		}),
 	],
 });
@@ -46,7 +67,7 @@ const server = Bun.serve({
 	},
 });
 
-function sseEvent(event: AgentEvent) {
+function sseEvent(event: any) {
 	return encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
 }
 

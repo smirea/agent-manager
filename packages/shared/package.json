@@ -5,7 +5,6 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./env": "./src/env.ts",
-		"./types": "./src/types.ts",
 		"./package.json": "./package.json"
 	},
 	"dependencies": {

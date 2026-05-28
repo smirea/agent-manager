@@ -1,8 +1,12 @@
-import { os } from '@orpc/server';
+import { ORPCError, os } from '@orpc/server';
+import { promiseAllObject } from '@repo/shared';
+import type { GrokSessionUpdate, GrokSessionUpdateJsonMessage } from '@repo/shared';
 import fs from 'fs';
 import path from 'path';
+import z from 'zod';
 
 export type GrokSession = {
+	id: string;
 	path: string;
 	summary: unknown;
 };
@@ -17,7 +21,7 @@ const grokProjectsDir = path.join(process.env.HOME!, '.grok', 'sessions');
 
 const listDir = async (root: string) => (await fs.promises.readdir(root)).map(x => path.join(root, x));
 
-async function listSessions(): Promise<GrokProjectSessions[]> {
+async function listProjects(): Promise<GrokProjectSessions[]> {
 	const result: GrokProjectSessions[] = [];
 	const projects = (await listDir(grokProjectsDir)).filter(x => fs.statSync(x).isDirectory());
 
@@ -30,10 +34,14 @@ async function listSessions(): Promise<GrokProjectSessions[]> {
 			sessions: await Promise.all(
 				(await listDir(dir))
 					.filter(x => fs.statSync(x).isDirectory())
-					.map(async dir => ({
-						path: dir,
-						summary: JSON.parse((await fs.promises.readFile(path.join(dir, 'summary.json'))).toString()),
-					})),
+					.map(async dir => {
+						const summary = JSON.parse(await fs.promises.readFile(path.join(dir, 'summary.json'), 'utf8'));
+						return {
+							id: summary.info.id,
+							path: dir,
+							summary,
+						};
+					}),
 			),
 		});
 	}
@@ -41,9 +49,36 @@ async function listSessions(): Promise<GrokProjectSessions[]> {
 	return result;
 }
 
+// TODO: this does not scale to massive fooken files
+const readJsonL = async <T extends unknown>(filePath: string) =>
+	(await fs.promises.readFile(filePath, 'utf8'))
+		.split('\n')
+		.filter(Boolean)
+		.map(line => JSON.parse(line) as T);
+
 export const router = {
 	sessions: {
-		list: os.handler(async () => listSessions()),
+		list: os.handler(async () => listProjects()),
+		get: os.input(z.object({ id: z.uuid() })).handler(async ({ input }) => {
+			const projects = await listProjects();
+			const match = projects
+				.map(x => x.sessions)
+				.flat()
+				.find(x => x.id === input.id);
+			if (!match) throw new ORPCError(`session.id="${input.id}" not found`);
+			return {
+				...match,
+				...(await promiseAllObject({
+					system: fs.promises.readFile(path.join(match.path, 'system_prompt.txt'), 'utf8'),
+					updates: (
+						await readJsonL<GrokSessionUpdateJsonMessage>(path.join(match.path, 'updates.jsonl'))
+					).map(message => {
+						delete (message.params.update as any)._meta;
+						return message.params.update;
+					}),
+				})),
+			};
+		}),
 	},
 };
 

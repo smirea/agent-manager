@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { HTMLInputAttributes } from 'svelte/elements';
+	import type { HTMLTextareaAttributes } from 'svelte/elements';
 
-	let { value = $bindable(''), class: cn, ...rest }: HTMLInputAttributes = $props();
+	let { value = $bindable(''), class: cn, ...rest }: HTMLTextareaAttributes = $props();
 </script>
 
 <fieldset class="root rotate-180">
 	<legend class="rotate-180 mx-4 px-1 text-xs">Grok Build</legend>
 	<div class="rotate-180 w-full flex pt-1.5 px-2 text-sm">
-		<div class="flex-0 font-mono mr-1 chevron">❭</div>
-		<input {...rest} bind:value class={[cn, 'outline-none font-mono w-full']} />
+		<div class="chevron flex-0 font-mono mr-1">❯</div>
+		<textarea {...rest} bind:value class={[cn, 'input outline-none font-mono w-full']}></textarea>
 	</div>
 </fieldset>
 
@@ -29,7 +29,12 @@
 	legend {
 		color: var(--border);
 	}
-	input,
+	.input {
+		field-sizing: content;
+		max-block-size: 10.5lh;
+		resize: none;
+	}
+	.input,
 	.chevron {
 		color: var(--text);
 	}
