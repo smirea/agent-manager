@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	optimizeDeps: {
-		exclude: ['@tanstack/svelte-query'],
+		exclude: ['@tanstack/svelte-query', '@humanspeak/svelte-markdown'],
 	},
 	server: {
 		allowedHosts: ['agent-manager.localhost'],
