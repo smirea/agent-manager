@@ -91,6 +91,7 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 			case 'agent_thought_chunk':
 			case 'agent_message_chunk':
 				const content: ClankerContent = item.content;
+				if (last.role !== 'clanker') lastThinkingTime = 0;
 				if (content.type === 'text' && item.sessionUpdate === 'agent_thought_chunk') {
 					content.thinking = true;
 					const { agentTimestampMs, turnStartMs } = (item._meta || {}) as {
@@ -102,7 +103,8 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 						content.thinkingDurationSec = Math.round((agentTimestampMs - turnStartMs) / 100) / 10;
 						lastThinkingTime = agentTimestampMs;
 					} else if (agentTimestampMs) {
-						content.thinkingDurationSec = Math.round((lastThinkingTime - agentTimestampMs) / 100) / 10;
+						content.thinkingDurationSec = Math.round((agentTimestampMs - lastThinkingTime) / 100) / 10;
+						lastThinkingTime = agentTimestampMs;
 					}
 				}
 				if (last.role === 'clanker') {
@@ -113,7 +115,6 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 						last.content.push(content);
 					}
 				} else {
-					lastThinkingTime = 0;
 					result.chat.push({
 						role: 'clanker',
 						id: item.messageId || undefined,
