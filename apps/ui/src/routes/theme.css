@@ -1,0 +1,297 @@
+/**
+ * Grok CLI theme (GrokNight on html[data-theme], GrokDay on html[data-theme='light']).
+ *
+ * Sources: Theme struct (~/.grok/docs/user-guide/06-theming.md), markdown scrollback palette,
+ * pager.toml (dim_accent, fade_text; bg_blend only in [data-thinking]), tmTheme for fenced code.
+ *
+ * Layers: hex primitives → derived (color-mix) → semantic (--grok-app-*, --grok-md-*, etc.).
+ * Scrollback uses bg_terminal + unblended md_* ; thinking blocks override md_* with bg_blend.
+ */
+
+html[data-theme] {
+	/* pager.toml */
+	--grok-blend-bg: 0.7;
+	--grok-dim-accent: 0.5;
+	--grok-fade-text: 0.55;
+	--grok-blend-fg: calc((1 - var(--grok-blend-bg)) * 100%);
+	--grok-dim-fg: calc((1 - var(--grok-dim-accent)) * 100%);
+	--grok-fade-fg: calc((1 - var(--grok-fade-text)) * 100%);
+
+	/* Primitives: GrokNight */
+	--grok-bg-base: #0a0a0a;
+	--grok-bg-light: #1e1e22;
+	--grok-bg-dark: #111111;
+	--grok-bg-highlight: #242424;
+	--grok-bg-hover: #323237;
+	--grok-bg-terminal: #000000;
+
+	--grok-accent-user: #7dcfff;
+	--grok-accent-assistant: #9ece6a;
+	--grok-accent-thinking: #73daca;
+	--grok-accent-tool: #e0af68;
+	--grok-accent-system: #7aa2f7;
+	--grok-accent-error: #f7768e;
+	--grok-accent-success: #9ece6a;
+	--grok-accent-running: #3a95ab;
+	--grok-accent-skill: #bb9af7;
+	--grok-accent-plan: #9d7cd8;
+	--grok-accent-feedback: #787878;
+	--grok-accent-model: #7dcfff;
+
+	--grok-text-primary: #c8c8c8;
+	--grok-text-secondary: #787878;
+
+	--grok-gray-dim: #6c6c6c;
+	--grok-gray: #5a5a5a;
+	--grok-gray-bright: #414141;
+
+	--grok-path: #9aa5ce;
+	--grok-warning: #ff9e64;
+	--grok-fuzzy-accent: #7aa2f7;
+
+	--grok-diff-delete-bg: #420e14;
+	--grok-diff-delete-fg: #f7768e;
+	--grok-diff-insert-bg: #063806;
+	--grok-diff-insert-fg: #9ece6a;
+	--grok-diff-equal-fg: #9ece6a;
+	--grok-diff-gutter-fg: #6c6c6c;
+
+	--grok-md-h1-base: #bb9af7;
+	--grok-md-h2-base: #9d7cd8;
+	--grok-md-h3-base: #7aa2f7;
+	--grok-md-h4-base: #c8c8c8;
+	--grok-md-h5-base: #9aa5ce;
+	--grok-md-h6-base: #787878;
+	--grok-md-code-fg-base: #c8c8c8;
+	--grok-md-code-bg-base: #1e1e22;
+	--grok-md-text-base: #e1e1e1;
+	--grok-md-muted-base: #646e9c;
+	--grok-md-link-base: #73daca;
+	--grok-md-table-base: #c0cefc;
+	--grok-md-hr-base: #51597d;
+	--grok-md-blockquote-base: #4e5579;
+
+	--grok-task-checked-base: #9ece6a;
+	--grok-task-unchecked-base: #6c6c6c;
+
+	--grok-syntax-bg: #0e0e0e;
+	--grok-syntax-fg: #b2b2b2;
+	--grok-syntax-h1: #89ddff;
+	--grok-syntax-h2: #61bdf2;
+	--grok-syntax-h3: #7aa2f7;
+	--grok-syntax-h4: #6d91de;
+	--grok-syntax-h5: #9aa5ce;
+	--grok-syntax-h6: #747ca1;
+	--grok-syntax-link: #73daca;
+
+	/* Derived */
+	--grok-command: var(--grok-accent-tool);
+	--grok-running: var(--grok-accent-running);
+
+	--grok-accent-user-dim: color-mix(in oklch, var(--grok-accent-user) var(--grok-dim-fg), var(--grok-bg-base));
+	--grok-accent-assistant-dim: color-mix(
+		in oklch,
+		var(--grok-accent-assistant) var(--grok-dim-fg),
+		var(--grok-bg-base)
+	);
+	--grok-accent-thinking-dim: color-mix(in oklch, var(--grok-accent-thinking) var(--grok-dim-fg), var(--grok-bg-base));
+	--grok-accent-tool-dim: color-mix(in oklch, var(--grok-accent-tool) var(--grok-dim-fg), var(--grok-bg-base));
+	--grok-accent-system-dim: color-mix(in oklch, var(--grok-accent-system) var(--grok-dim-fg), var(--grok-bg-base));
+	--grok-accent-running-dim: color-mix(in oklch, var(--grok-accent-running) var(--grok-dim-fg), var(--grok-bg-base));
+	--grok-accent-skill-dim: color-mix(in oklch, var(--grok-accent-skill) var(--grok-dim-fg), var(--grok-bg-base));
+
+	--grok-text: var(--grok-text-primary);
+	--grok-text-faded: color-mix(in oklch, var(--grok-text-primary) var(--grok-fade-fg), var(--grok-bg-base));
+	--grok-text-thinking: var(--grok-gray-dim);
+	--grok-text-muted: color-mix(in oklch, var(--grok-text-secondary) var(--grok-blend-fg), var(--grok-bg-base));
+
+	--grok-border: var(--grok-gray);
+	--grok-border-faded: var(--grok-bg-hover);
+	--grok-border-focus: var(--grok-accent-system);
+	--grok-border-subtle: color-mix(in oklch, var(--grok-gray-dim) var(--grok-blend-fg), var(--grok-bg-base));
+
+	--grok-surface-base: var(--grok-bg-base);
+	--grok-surface-raised: var(--grok-bg-light);
+	--grok-surface-sunken: var(--grok-bg-dark);
+	--grok-surface-highlight: var(--grok-bg-highlight);
+	--grok-surface-hover: var(--grok-bg-hover);
+	--grok-surface-terminal: var(--grok-bg-terminal);
+	--grok-surface-overlay: oklch(from var(--grok-bg-terminal) l c h / 0.95);
+
+	/* Markdown scrollback (unblended on bg_terminal) */
+	--grok-md-h1: var(--grok-md-h1-base);
+	--grok-md-h2: var(--grok-md-h2-base);
+	--grok-md-h3: var(--grok-md-h3-base);
+	--grok-md-h4: var(--grok-md-h4-base);
+	--grok-md-h5: var(--grok-md-h5-base);
+	--grok-md-h6: var(--grok-md-h6-base);
+	--grok-md-text: var(--grok-md-text-base);
+	--grok-md-muted: var(--grok-md-muted-base);
+	--grok-strong: var(--grok-md-h2-base);
+
+	--grok-md-link: var(--grok-accent-system);
+	--grok-link-hover: var(--grok-accent-user);
+	--grok-link-visited: var(--grok-accent-plan);
+
+	--grok-md-code-fg: var(--grok-md-code-fg-base);
+	--grok-md-code-bg: var(--grok-md-code-bg-base);
+	--grok-inline-code: var(--grok-accent-user);
+	--grok-pre-fg: var(--grok-syntax-fg);
+	--grok-pre-bg: var(--grok-syntax-bg);
+
+	--grok-md-table-fg: var(--grok-md-table-base);
+	--grok-table-col-1: var(--grok-accent-user);
+	--grok-table-col-2: var(--grok-accent-system);
+	--grok-table-col-3: var(--grok-md-text-base);
+	--grok-table-border: var(--grok-gray-dim);
+	--grok-table-head-bg: var(--grok-bg-highlight);
+	--grok-table-head-fg: var(--grok-md-text-base);
+
+	--grok-md-hr: var(--grok-md-hr-base);
+	--grok-blockquote-fg: var(--grok-md-blockquote-base);
+	--grok-blockquote-border: var(--grok-md-blockquote-base);
+
+	--grok-task-checked: var(--grok-task-checked-base);
+	--grok-task-unchecked: var(--grok-task-unchecked-base);
+
+	/* App */
+	--grok-app-bg: var(--grok-bg-terminal);
+	--grok-app-text: var(--grok-md-text);
+	background-color: var(--grok-app-bg);
+	color: var(--grok-app-text);
+
+	/* Prompt */
+	--grok-prompt-bg: var(--grok-bg-terminal);
+	--grok-prompt-text: var(--grok-text);
+	--grok-prompt-text-idle: var(--grok-text-faded);
+	--grok-prompt-border: var(--grok-border);
+	--grok-prompt-border-idle: var(--grok-border-faded);
+	--grok-prompt-caret: var(--grok-accent-user);
+	--grok-prompt-prefix: var(--grok-text-faded);
+
+	/* Messages */
+	--grok-message-user-bg: var(--grok-bg-light);
+	--grok-message-user-text: var(--grok-md-text-base);
+	--grok-message-assistant-text: var(--grok-md-text);
+	--grok-message-thinking-text: var(--grok-text-thinking);
+	--grok-message-thinking-accent: var(--grok-accent-thinking-dim);
+	--grok-message-toggle-accent: var(--grok-text-secondary);
+
+	/* Tools */
+	--grok-tool-title: var(--grok-accent-tool);
+	--grok-tool-title-muted: var(--grok-accent-tool-dim);
+	--grok-tool-running: var(--grok-accent-running);
+	--grok-tool-system: var(--grok-accent-system);
+	--grok-tool-error: var(--grok-accent-error);
+	--grok-tool-success: var(--grok-accent-success);
+	--grok-tool-skill: var(--grok-accent-skill);
+	--grok-tool-plan: var(--grok-accent-plan);
+
+	/* Status (Tailwind alert utilities) */
+	--grok-status-error: var(--grok-accent-error);
+	--grok-status-error-bg: var(--grok-diff-delete-bg);
+	--grok-status-error-border: var(--grok-diff-delete-fg);
+	--grok-status-error-fg: var(--grok-diff-delete-fg);
+
+	--grok-status-warning: var(--grok-warning);
+	--grok-status-warning-bg: color-mix(in oklch, var(--grok-warning) 15%, var(--grok-bg-base));
+	--grok-status-warning-border: var(--grok-warning);
+	--grok-status-warning-fg: var(--grok-warning);
+
+	--grok-status-info: var(--grok-accent-system);
+	--grok-status-info-bg: color-mix(in oklch, var(--grok-accent-system) 15%, var(--grok-bg-base));
+	--grok-status-info-border: var(--grok-accent-system);
+	--grok-status-info-fg: var(--grok-accent-system);
+
+	--grok-status-success: var(--grok-accent-success);
+	--grok-status-success-bg: var(--grok-diff-insert-bg);
+	--grok-status-success-border: var(--grok-diff-insert-fg);
+	--grok-status-success-fg: var(--grok-diff-insert-fg);
+
+	--grok-status-running: var(--grok-accent-running);
+}
+
+/* Thinking: scrollback.blocks.thinking.bg_blend */
+[data-thinking] {
+	--grok-md-h1: color-mix(in oklch, var(--grok-md-h1-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-h2: color-mix(in oklch, var(--grok-md-h2-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-h3: color-mix(in oklch, var(--grok-md-h3-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-h4: color-mix(in oklch, var(--grok-md-h4-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-h5: color-mix(in oklch, var(--grok-md-h5-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-h6: color-mix(in oklch, var(--grok-md-h6-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-text: color-mix(in oklch, var(--grok-md-text-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-muted: color-mix(in oklch, var(--grok-md-muted-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-strong: color-mix(in oklch, var(--grok-md-h2-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-link: color-mix(in oklch, var(--grok-md-link-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-md-table-fg: color-mix(in oklch, var(--grok-md-table-base) var(--grok-blend-fg), var(--grok-bg-base));
+	--grok-blockquote-fg: color-mix(in oklch, var(--grok-md-blockquote-base) var(--grok-blend-fg), var(--grok-bg-base));
+}
+
+/* Primitives: GrokDay */
+html[data-theme='light'] {
+	--grok-bg-base: #f5f5f5;
+	--grok-bg-light: #eaeaea;
+	--grok-bg-dark: #dedede;
+	--grok-bg-highlight: #e6e6e6;
+	--grok-bg-hover: #d4d4d8;
+	--grok-bg-terminal: #ffffff;
+
+	--grok-accent-user: #2f64d2;
+	--grok-accent-assistant: #378e23;
+	--grok-accent-thinking: #0a8e70;
+	--grok-accent-tool: #a27612;
+	--grok-accent-system: #2f64d2;
+	--grok-accent-error: #cd3048;
+	--grok-accent-success: #4caf50;
+	--grok-accent-running: #0f87a2;
+	--grok-accent-skill: #7d4bc6;
+	--grok-accent-plan: #6c3eb2;
+	--grok-accent-feedback: #767676;
+	--grok-accent-model: #2f64d2;
+
+	--grok-text-primary: #444444;
+	--grok-text-secondary: #767676;
+
+	--grok-gray-dim: #8e8e8e;
+	--grok-gray: #626262;
+	--grok-gray-bright: #b2b2b2;
+
+	--grok-path: #2f64d2;
+	--grok-warning: #c3691e;
+	--grok-fuzzy-accent: #2f64d2;
+
+	--grok-diff-delete-bg: #f5dade;
+	--grok-diff-delete-fg: #cd3048;
+	--grok-diff-insert-bg: #daf2dc;
+	--grok-diff-insert-fg: #378e23;
+	--grok-diff-equal-fg: #444444;
+	--grok-diff-gutter-fg: #626262;
+
+	--grok-md-h1-base: #7d4bc6;
+	--grok-md-h2-base: #6c3eb2;
+	--grok-md-h3-base: #2f64d2;
+	--grok-md-h4-base: #444444;
+	--grok-md-h5-base: #767676;
+	--grok-md-h6-base: #8e8e8e;
+	--grok-md-code-fg-base: #444444;
+	--grok-md-code-bg-base: #eaeaea;
+	--grok-md-text-base: #444444;
+	--grok-md-muted-base: #767676;
+	--grok-md-link-base: #0a8e70;
+	--grok-md-table-base: #444444;
+	--grok-md-hr-base: #b9b9be;
+	--grok-md-blockquote-base: #767676;
+
+	--grok-task-checked-base: #378e23;
+	--grok-task-unchecked-base: #626262;
+
+	--grok-syntax-bg: #f6f6f6;
+	--grok-syntax-fg: #444444;
+	--grok-syntax-h1: #0082aa;
+	--grok-syntax-h2: #0f87a2;
+	--grok-syntax-h3: #2f64d2;
+	--grok-syntax-h4: #444444;
+	--grok-syntax-h5: #767676;
+	--grok-syntax-h6: #8e8e8e;
+	--grok-syntax-link: #0a8e70;
+}

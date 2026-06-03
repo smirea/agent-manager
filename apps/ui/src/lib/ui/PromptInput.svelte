@@ -14,13 +14,13 @@
 
 <style>
 	.root {
-		--border: var(--theme-g-border-faded);
-		--text: var(--theme-g-text-faded);
+		--border: var(--grok-prompt-border-idle);
+		--text: var(--grok-prompt-text-idle);
 		position: relative;
 	}
 	.root:focus-within {
-		--border: var(--theme-g-border);
-		--text: var(--theme-g-text);
+		--border: var(--grok-prompt-border);
+		--text: var(--grok-prompt-text);
 	}
 	fieldset {
 		border: 1px solid var(--border);
@@ -33,9 +33,9 @@
 		field-sizing: content;
 		max-block-size: 10.5lh;
 		resize: none;
-	}
-	.input,
-	.chevron {
 		color: var(--text);
+	}
+	.chevron {
+		color: var(--grok-prompt-prefix);
 	}
 </style>
