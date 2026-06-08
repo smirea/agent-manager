@@ -22,6 +22,7 @@
 	const sourceCount = (out: any) => out?.action?.sources?.length ?? out?.citations?.length ?? out?.result_count;
 	const backtick = (value?: string | null) => (value ?? '').replace(/^`|`$/g, '');
 	const displayPath = (value?: string | null) => backtick(value)?.replace(/^.*\/([^/]+)$/, '$1');
+	const thinkingSource = (value: string) => value.replace(/[<>]/g, match => `\\${match}`);
 
 	const toolSummary = (tool: any): { title: string; titleExtra: TitleExtra[] } => {
 		const input = tool.rawInput ?? {};
@@ -151,7 +152,7 @@
 									titleExtra={[{ text: c.thinkingDurationSec ? `for ${c.thinkingDurationSec}s` : 'for a bit' }]}
 									{...toggleProps(itemIndex, contentIndex)}
 								>
-									<pre class="thinking-text">{c.text}</pre>
+									<Markdown source={thinkingSource(c.text)} />
 								</ToolToggle>
 							</div>
 						{:else}
@@ -201,15 +202,5 @@
 	.tool,
 	[data-thinking] {
 		color: var(--grok-message-thinking-text);
-	}
-
-	.thinking-text {
-		margin: 0.35rem 0;
-		padding: 0;
-		background: transparent;
-		color: var(--grok-md-text);
-		font: inherit;
-		white-space: pre-wrap;
-		word-break: break-word;
 	}
 </style>
