@@ -20,20 +20,13 @@
 		items.filter((item): item is TitleExtra => !!item?.text);
 	const rawOutput = (tool: any) => (tool.rawOutput && typeof tool.rawOutput === 'object' ? tool.rawOutput : null);
 	const sourceCount = (out: any) => out?.action?.sources?.length ?? out?.citations?.length ?? out?.result_count;
-	const statusExtra = (tool: any, out: any) => {
-		if (tool.status === 'failed') return { text: 'failed', color: 'var(--grok-tool-error)' };
-		if (out?.exit_code != null && out.exit_code !== 0)
-			return { text: `exit ${out.exit_code}`, color: 'var(--grok-tool-error)' };
-		if (out?.timed_out) return { text: 'timed out', color: 'var(--grok-warning)' };
-		if (out?.truncated || out?.Result?.truncated) return { text: 'truncated', color: 'var(--grok-warning)' };
-		return null;
-	};
+	const backtick = (value?: string | null) => (value ?? '').replace(/^`|`$/g, '');
+	const displayPath = (value?: string | null) => backtick(value)?.replace(/^.*\/([^/]+)$/, '$1');
 
 	const toolSummary = (tool: any): { title: string; titleExtra: TitleExtra[] } => {
 		const input = tool.rawInput ?? {};
 		const out = rawOutput(tool);
 		const variant = input.variant;
-		const status = statusExtra(tool, out);
 		const path = input.target_file ?? input.path ?? input.file_path ?? input.filePath ?? input.target_directory;
 		const command = input.command ?? out?.command;
 		const query = input.query ?? out?.query ?? out?.action?.query;
@@ -41,25 +34,24 @@
 
 		switch (variant) {
 			case 'ListDir':
-				return { title: 'List', titleExtra: extra({ text: input.target_directory ?? path }, status) };
+				return { title: 'List', titleExtra: extra({ text: input.target_directory ?? path }) };
 			case 'ReadFile':
 			case 'CursorRead':
-				return { title: 'Read', titleExtra: extra({ text: path }, status) };
+				return { title: 'Read', titleExtra: extra({ text: displayPath(path) }) };
 			case 'Bash':
 			case 'CursorShell':
 				return {
 					title: out?.type === 'BackgroundTaskStarted' ? 'Background' : 'Run',
-					titleExtra: extra({ text: command, color: 'var(--grok-tool-system)' }, status),
+					titleExtra: extra({ text: command }),
 				};
 			case 'Grep':
 			case 'CursorGrep':
 				return {
 					title: 'Search',
 					titleExtra: extra(
-						{ text: input.pattern ? `"${input.pattern}"` : query, color: 'var(--grok-tool-success)' },
-						{ text: input.path ?? input.glob ?? '' },
-						count != null ? { text: `${count} ${count === 1 ? 'match' : 'matches'}` } : null,
-						status,
+						{ text: input.pattern ? `"${input.pattern}"` : query },
+						{ text: input.path ? `in ${input.path}` : (input.glob ?? '') },
+						count != null ? { text: `(${count} ${count === 1 ? 'match' : 'matches'})` } : null,
 					),
 				};
 			case 'CursorGlob':
@@ -67,83 +59,76 @@
 					title: 'Glob',
 					titleExtra: extra(
 						{ text: input.glob_pattern ?? input.glob },
-						count != null ? { text: `${count} files` } : null,
-						status,
+						count != null ? { text: `(${count} files)` } : null,
 					),
 				};
 			case 'SearchReplace':
 			case 'CursorStrReplace':
-				return { title: out?.NoMatchesFound ? 'No edits' : 'Edited', titleExtra: extra({ text: path }, status) };
+				return { title: out?.NoMatchesFound ? 'No edits' : 'Edit', titleExtra: extra({ text: displayPath(path) }) };
 			case 'Write':
 			case 'CursorWrite':
 				return {
-					title: out?.EditsApplied?.old_string ? 'Edited' : 'Creating',
-					titleExtra: extra({ text: path }, status),
+					title: out?.EditsApplied?.old_string ? 'Edit' : 'Creating',
+					titleExtra: extra({ text: displayPath(input.filePath ?? path) }),
 				};
 			case 'TodoWrite':
 			case 'CursorTodoWrite':
-				return { title: 'Updated plan', titleExtra: extra(status) };
+				return { title: tool.status === 'completed' ? 'Updated plan' : 'Updating plan', titleExtra: [] };
 			case 'WebSearch':
 			case 'CursorWebSearch':
 				return {
 					title: 'Web Search',
 					titleExtra: extra(
-						{ text: query || (input.backend ? 'server-side' : ''), color: 'var(--grok-tool-system)' },
-						count != null ? { text: `${count} ${count === 1 ? 'site' : 'sites'}` } : null,
-						status,
+						{ text: query || (input.backend ? 'server-side' : '') },
+						count != null ? { text: `(${count} ${count === 1 ? 'site' : 'sites'})` } : null,
 					),
 				};
 			case 'XSearch':
 				return {
 					title: 'X Search',
-					titleExtra: extra({ text: query ?? out?.name ?? 'server-side', color: 'var(--grok-tool-system)' }, status),
+					titleExtra: extra({ text: query ?? out?.name ?? 'server-side' }),
 				};
 			case 'WebFetch':
 			case 'CursorWebFetch':
 				return {
 					title: 'Fetch',
-					titleExtra: extra({ text: input.url ?? out?.Content?.url, color: 'var(--grok-tool-system)' }, status),
+					titleExtra: extra({ text: input.url ?? out?.Content?.url }),
 				};
 			case 'CursorAwaitShell':
-				return { title: 'Await', titleExtra: extra({ text: input.pattern ?? input.shell_id }, status) };
+				return { title: 'Await', titleExtra: extra({ text: input.pattern ?? input.shell_id }) };
 			case 'CursorTask':
-				return { title: 'Task', titleExtra: extra({ text: input.description ?? input.prompt ?? tool.title }, status) };
+				return { title: 'Task', titleExtra: extra({ text: input.description ?? input.prompt ?? tool.title }) };
 			case 'CursorListMcpResources':
-				return { title: 'MCP Resources', titleExtra: extra({ text: input.server }, status) };
+				return { title: 'MCP Resources', titleExtra: extra({ text: input.server }) };
 			case 'UseTool':
 				return {
 					title: 'MCP',
-					titleExtra: extra({ text: input.tool_name ?? out?.tool_name, color: 'var(--grok-tool-skill)' }, status),
+					titleExtra: extra({ text: input.tool_name ?? out?.tool_name }),
 				};
 			case 'TaskOutput':
-				return { title: 'Task Output', titleExtra: extra({ text: input.task_id ?? out?.Result?.task_id }, status) };
+				return { title: 'Task Output', titleExtra: extra({ text: input.task_id ?? out?.Result?.task_id }) };
 			case 'KillTask':
-				return { title: 'Kill Task', titleExtra: extra({ text: input.task_id ?? out?.Result?.task_id }, status) };
+				return { title: 'Kill Task', titleExtra: extra({ text: input.task_id ?? out?.Result?.task_id }) };
 			case 'SchedulerList':
-				return { title: 'Scheduler', titleExtra: extra(count != null ? { text: `${count} tasks` } : null, status) };
+				return { title: 'Scheduler', titleExtra: extra(count != null ? { text: `(${count} tasks)` } : null) };
 			case 'SearchTool':
 				return {
 					title: 'Search',
-					titleExtra: extra(
-						{ text: query ?? tool.title, color: 'var(--grok-tool-success)' },
-						count != null ? { text: `${count} results` } : null,
-						status,
-					),
+					titleExtra: extra({ text: query ?? tool.title }, count != null ? { text: `(${count} results)` } : null),
 				};
 			default:
 				if (out?.action?.type === 'search') {
 					return {
 						title: 'Web Search',
 						titleExtra: extra(
-							{ text: out.action.query, color: 'var(--grok-tool-system)' },
-							count != null ? { text: `${count} sites` } : null,
-							status,
+							{ text: out.action.query },
+							count != null ? { text: `(${count} ${count === 1 ? 'site' : 'sites'})` } : null,
 						),
 					};
 				}
 				return {
 					title: tool.title ?? variant ?? 'Tool',
-					titleExtra: extra(variant ? { text: variant } : null, status),
+					titleExtra: extra(variant ? { text: variant } : null),
 				};
 		}
 	};

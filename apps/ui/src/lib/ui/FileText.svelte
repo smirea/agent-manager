@@ -40,16 +40,13 @@
 <style>
 	.file-text {
 		margin: 0.35rem 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		line-height: 1.45;
 		overflow-x: auto;
 	}
 
 	.line {
 		display: grid;
-		grid-template-columns: 3.5rem minmax(0, 1fr);
-		column-gap: 0.75rem;
+		grid-template-columns: 2.4rem minmax(0, 1fr);
+		column-gap: 0.6rem;
 		min-width: max-content;
 	}
 

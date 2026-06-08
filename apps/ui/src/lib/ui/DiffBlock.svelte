@@ -13,7 +13,7 @@
 		details?: GrokSearchReplaceEditDetail[] | null;
 	} = $props();
 
-	type Row = { kind: 'same' | 'delete' | 'insert'; oldLine?: number; newLine?: number; text: string };
+	type Row = { kind: 'same' | 'delete' | 'insert' | 'create'; line?: number; text: string };
 
 	const splitLines = (value?: string | null) => (value ? value.replace(/\n$/, '').split('\n') : []);
 
@@ -27,16 +27,21 @@
 			const oldContextStart = Math.max(1, item.old_line - before.length);
 			const newContextStart = Math.max(1, item.new_line - before.length);
 
-			before.forEach((text, index) =>
-				rows.push({ kind: 'same', oldLine: oldContextStart + index, newLine: newContextStart + index, text }),
+			before.forEach((text, index) => rows.push({ kind: 'same', line: oldContextStart + index, text }));
+			oldLines.forEach((text, index) =>
+				rows.push({ kind: 'delete', line: item.old_line + index, text: `${item.line_prefix ?? ''}${text}` }),
 			);
-			oldLines.forEach((text, index) => rows.push({ kind: 'delete', oldLine: item.old_line + index, text }));
-			newLines.forEach((text, index) => rows.push({ kind: 'insert', newLine: item.new_line + index, text }));
+			newLines.forEach((text, index) =>
+				rows.push({
+					kind: oldLines.length === 0 ? 'create' : 'insert',
+					line: item.new_line + index,
+					text: `${item.line_prefix ?? ''}${text}`,
+				}),
+			);
 			after.forEach((text, index) =>
 				rows.push({
 					kind: 'same',
-					oldLine: item.old_line + oldLines.length + index,
-					newLine: item.new_line + newLines.length + index,
+					line: item.new_line + newLines.length + index,
 					text,
 				}),
 			);
@@ -61,18 +66,17 @@
 
 		const rows: Row[] = [];
 		for (let index = 0; index < prefix; index++) {
-			rows.push({ kind: 'same', oldLine: index + 1, newLine: index + 1, text: oldLines[index] });
+			rows.push({ kind: 'same', line: index + 1, text: oldLines[index] });
 		}
 		for (let index = prefix; index < oldLines.length - suffix; index++) {
-			rows.push({ kind: 'delete', oldLine: index + 1, text: oldLines[index] });
+			rows.push({ kind: 'delete', line: index + 1, text: oldLines[index] });
 		}
 		for (let index = prefix; index < newLines.length - suffix; index++) {
-			rows.push({ kind: 'insert', newLine: index + 1, text: newLines[index] });
+			rows.push({ kind: oldLines.length === 0 ? 'create' : 'insert', line: index + 1, text: newLines[index] });
 		}
 		for (let index = 0; index < suffix; index++) {
-			const oldIndex = oldLines.length - suffix + index;
 			const newIndex = newLines.length - suffix + index;
-			rows.push({ kind: 'same', oldLine: oldIndex + 1, newLine: newIndex + 1, text: oldLines[oldIndex] });
+			rows.push({ kind: 'same', line: newIndex + 1, text: newLines[newIndex] });
 		}
 		return rows;
 	};
@@ -88,8 +92,7 @@
 		{#each rows as row}
 			<div class="line" data-kind={row.kind}>
 				<span class="mark">{row.kind === 'insert' ? '+' : row.kind === 'delete' ? '-' : ' '}</span>
-				<span class="number">{row.oldLine ?? ''}</span>
-				<span class="number">{row.newLine ?? ''}</span>
+				<span class="number">{row.line ?? ''}</span>
 				<span class="text">{row.text || ' '}</span>
 			</div>
 		{/each}
@@ -99,36 +102,30 @@
 <style>
 	.diff {
 		margin: 0.35rem 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		line-height: 1.45;
 		overflow-x: auto;
 	}
 
 	.path {
-		margin-bottom: 0.2rem;
-		color: var(--grok-path);
-		font-weight: bold;
+		display: none;
 	}
 
 	.line {
 		display: grid;
-		grid-template-columns: 1rem 3rem 3rem minmax(0, 1fr);
+		grid-template-columns: 1rem 2.4rem minmax(0, 1fr);
 		min-width: max-content;
 	}
 
 	.line[data-kind='delete'] {
-		background: var(--grok-diff-delete-bg);
 		color: var(--grok-diff-delete-fg);
 	}
 
 	.line[data-kind='insert'] {
-		background: var(--grok-diff-insert-bg);
 		color: var(--grok-diff-insert-fg);
 	}
 
+	.line[data-kind='create'],
 	.line[data-kind='same'] {
-		color: var(--grok-diff-equal-fg);
+		color: var(--grok-md-text);
 	}
 
 	.mark,
@@ -138,7 +135,7 @@
 	}
 
 	.number {
-		padding-right: 0.75rem;
+		padding-right: 0.6rem;
 		text-align: right;
 	}
 

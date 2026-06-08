@@ -81,6 +81,13 @@ function finalizeTool(item: RawToolItem): CompiledTool {
 	return { ...compiled, variant } as CompiledTool;
 }
 
+function mergeToolUpdate(target: RawToolItem, update: RawToolItem) {
+	for (const [key, value] of Object.entries(update)) {
+		if (value == null && (key === 'title' || key === 'rawInput' || key === 'rawOutput')) continue;
+		(target as Record<string, unknown>)[key] = value;
+	}
+}
+
 export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUpdates {
 	const availableCommands: acp.AvailableCommand[] = [];
 	let mode = 'plan';
@@ -102,7 +109,7 @@ export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUp
 				compilingList.push(item);
 				break;
 			case 'tool_call_update':
-				if (tools[item.toolCallId] != null) Object.assign(compilingList[tools[item.toolCallId]], item);
+				if (tools[item.toolCallId] != null) mergeToolUpdate(compilingList[tools[item.toolCallId]] as RawToolItem, item);
 				break;
 			case 'tool_call_delta_chunk':
 				// todo: empty?
