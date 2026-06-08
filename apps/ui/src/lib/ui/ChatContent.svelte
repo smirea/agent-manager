@@ -151,7 +151,7 @@
 									titleExtra={[{ text: c.thinkingDurationSec ? `for ${c.thinkingDurationSec}s` : 'for a bit' }]}
 									{...toggleProps(itemIndex, contentIndex)}
 								>
-									<Markdown source={c.text} />
+									<pre class="thinking-text">{c.text}</pre>
 								</ToolToggle>
 							</div>
 						{:else}
@@ -201,5 +201,15 @@
 	.tool,
 	[data-thinking] {
 		color: var(--grok-message-thinking-text);
+	}
+
+	.thinking-text {
+		margin: 0.35rem 0;
+		padding: 0;
+		background: transparent;
+		color: var(--grok-md-text);
+		font: inherit;
+		white-space: pre-wrap;
+		word-break: break-word;
 	}
 </style>
