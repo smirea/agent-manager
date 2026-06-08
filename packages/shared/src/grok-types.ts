@@ -1,112 +1,97 @@
 import type * as acp from '@agentclientprotocol/sdk';
 
-export type AcpUserMessageChunkUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'user_message_chunk' }>;
-export type AcpAgentMessageChunkUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'agent_message_chunk' }>;
-export type AcpAgentThoughtChunkUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'agent_thought_chunk' }>;
-export type AcpPlanUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'plan' }>;
-export type AcpAvailableCommandsUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'available_commands_update' }>;
-export type AcpCurrentModeUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'current_mode_update' }>;
-export type AcpConfigOptionUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'config_option_update' }>;
-export type AcpSessionInfoUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'session_info_update' }>;
-export type AcpUsageUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'usage_update' }>;
+// Derived from grok CLI v0.2.33 session logs + ACP SDK schema.
+// https://agentclientprotocol.com/protocol/tool-calls
 
-type AcpToolCallUpdate = Extract<acp.SessionUpdate, { sessionUpdate: 'tool_call_update' }>;
-type AcpToolCall = Extract<acp.SessionUpdate, { sessionUpdate: 'tool_call' }>;
+type AcpSessionUpdateOf<K extends acp.SessionUpdate['sessionUpdate']> = Extract<
+	acp.SessionUpdate,
+	{ sessionUpdate: K }
+>;
 
-export type GrokToolRawInput =
-	| GrokBashToolRawInput
-	| GrokReadFileToolRawInput
-	| GrokListDirToolRawInput
-	| GrokGrepToolRawInput
-	| GrokSearchReplaceToolRawInput
-	| GrokWebSearchToolRawInput
-	| GrokWebFetchToolRawInput
-	| GrokTodoWriteToolRawInput
-	| GrokWriteToolRawInput;
+export type AcpUserMessageChunkUpdate = AcpSessionUpdateOf<'user_message_chunk'>;
+export type AcpAgentMessageChunkUpdate = AcpSessionUpdateOf<'agent_message_chunk'>;
+export type AcpAgentThoughtChunkUpdate = AcpSessionUpdateOf<'agent_thought_chunk'>;
+export type AcpPlanUpdate = AcpSessionUpdateOf<'plan'>;
+export type AcpAvailableCommandsUpdate = AcpSessionUpdateOf<'available_commands_update'>;
+export type AcpCurrentModeUpdate = AcpSessionUpdateOf<'current_mode_update'>;
+export type AcpConfigOptionUpdate = AcpSessionUpdateOf<'config_option_update'>;
+export type AcpSessionInfoUpdate = AcpSessionUpdateOf<'session_info_update'>;
+export type AcpUsageUpdate = AcpSessionUpdateOf<'usage_update'>;
 
-export type GrokBashToolRawInput = {
-	variant?: 'Bash';
-	command: string;
-	background?: boolean;
-	description?: string;
-	is_background?: boolean;
-	timeout?: number;
+type AcpToolCall = AcpSessionUpdateOf<'tool_call'>;
+type AcpToolCallUpdate = AcpSessionUpdateOf<'tool_call_update'>;
+
+export type GrokByteArray = number[];
+
+type GrokToolInput<V extends string> = { variant?: V };
+type GrokToolSpec<V extends string, RawInput extends GrokToolInput<V>, RawOutput> = {
+	variant: V;
+	rawInput: RawInput;
+	rawOutput: RawOutput;
 };
 
-export type GrokReadFileToolRawInput = {
-	variant?: 'ReadFile';
-	target_file: string;
-	limit?: number;
-	offset?: number;
+// --- Shared output shapes (reused across tools) ---
+
+export type GrokReadFileContent = {
+	absolute_path: string;
+	content: string;
+	content_concise: string;
+	content_hash: number;
+	mtime_at_read: { Known: number };
+	offset: number | null;
+	raw_output: string;
+	total_lines: number;
 };
 
-export type GrokListDirToolRawInput = {
-	variant?: 'ListDir';
-	target_directory: string;
+export type GrokGrepMatch = {
+	line_number: number;
+	content: string;
 };
 
-export type GrokGrepToolRawInput = {
-	variant?: 'Grep';
-	pattern: string;
-	'-A'?: number;
-	'-B'?: number;
-	'-i'?: boolean | null;
-	glob?: string | null;
-	head_limit?: number;
-	multiline?: boolean;
-	output_mode?: string;
-	path?: string | null;
-	type?: string | null;
+export type GrokGrepFileMatch = {
+	path: string;
+	matches: GrokGrepMatch[];
 };
 
-export type GrokSearchReplaceToolRawInput = {
-	variant?: 'SearchReplace';
-	file_path: string;
-	new_string: string;
+export type GrokSearchReplaceEditDetail = {
 	old_string: string;
-	replace_all?: boolean;
+	old_line: number;
+	new_string: string;
+	new_line: number;
+	context_before: string;
+	context_after: string;
+	line_prefix: string;
 };
 
-export type GrokWebSearchToolRawInput = {
-	variant?: 'WebSearch';
-	allowed_domains?: string[];
-	backend?: boolean;
-	query?: string;
+export type GrokSearchReplaceEditsApplied = {
+	absolute_path: string;
+	old_string: string;
+	new_string: string;
+	tool_output_for_prompt: string;
+	tool_output_for_prompt_concise: string;
+	edits: { details: GrokSearchReplaceEditDetail[] };
 };
 
-export type GrokWebFetchToolRawInput = {
-	variant?: 'WebFetch';
-	url: string;
+export type GrokSearchReplaceNoMatchesFound = {
+	message: string;
+	file_path: string;
 };
 
-export type GrokTodoWriteToolRawInput = {
-	variant?: 'TodoWrite';
-	merge: boolean;
-	todos: GrokTodoInput[];
-};
+export type GrokSearchReplaceToolRawOutput =
+	| { type: 'SearchReplace'; EditsApplied: GrokSearchReplaceEditsApplied }
+	| { type: 'SearchReplace'; NoMatchesFound: GrokSearchReplaceNoMatchesFound };
 
-export type GrokWriteToolRawInput = {
-	variant?: 'Write';
-	content: string;
-	filePath: string;
-};
-
-export type GrokTodoInput = {
-	content: string;
-	id: string;
+export type GrokBackgroundTaskStartedOutput = {
+	type: 'BackgroundTaskStarted';
+	task_id: string;
+	task_type: string;
+	output_file: string;
 	status: string;
+	command: string;
+	summary: string;
+	retrieval_hint: string;
+	pid: number;
 };
-
-export type GrokToolRawOutput =
-	| GrokBashToolRawOutput
-	| GrokReadFileToolRawOutput
-	| GrokListDirToolRawOutput
-	| GrokGrepSearchToolRawOutput
-	| GrokSearchReplaceToolRawOutput
-	| GrokWebSearchToolRawOutput
-	| GrokWebFetchToolRawOutput
-	| GrokTodoToolRawOutput
-	| GrokSearchActionToolRawOutput;
 
 export type GrokBashToolRawOutput = {
 	type: 'Bash';
@@ -114,8 +99,8 @@ export type GrokBashToolRawOutput = {
 	current_dir: string;
 	description: string | null;
 	exit_code: number | null;
-	output: number[];
-	output_delta?: number[];
+	output?: GrokByteArray;
+	output_delta?: GrokByteArray;
 	output_file: string;
 	output_for_prompt: string;
 	signal: string | null;
@@ -124,118 +109,301 @@ export type GrokBashToolRawOutput = {
 	truncated: boolean;
 };
 
+export type GrokTextToolRawOutput = {
+	type: 'Text';
+	text: string;
+};
+
+// --- Native Grok tools ---
+
+export type GrokBashToolRawInput = GrokToolInput<'Bash'> & {
+	command: string;
+	description?: string;
+	is_background?: boolean;
+	timeout?: number;
+};
+
+export type GrokBashTool = GrokToolSpec<
+	'Bash',
+	GrokBashToolRawInput,
+	GrokBashToolRawOutput | GrokBackgroundTaskStartedOutput
+>;
+
+export type GrokReadFileToolRawInput = GrokToolInput<'ReadFile'> & {
+	target_file: string;
+	limit?: number;
+	offset?: number;
+};
+
 export type GrokReadFileToolRawOutput = {
 	type: 'ReadFile';
-	FileContent: {
-		absolute_path: string;
-		content: string;
-		content_concise: string;
-		content_hash: number;
-		mtime_at_read: { Known: number };
-		offset: number | null;
-		raw_output: string;
-		total_lines: number;
-	};
+	FileContent: GrokReadFileContent;
+};
+
+export type GrokReadFileTool = GrokToolSpec<'ReadFile', GrokReadFileToolRawInput, GrokReadFileToolRawOutput>;
+
+export type GrokListDirToolRawInput = GrokToolInput<'ListDir'> & {
+	target_directory: string;
 };
 
 export type GrokListDirToolRawOutput =
-	| {
-			type: 'ListDir';
-			Content: {
-				absolute_root_path: string;
-				content: string;
-			};
-	  }
-	| {
-			type: 'ListDir';
-			NotFound: string;
-	  };
+	| { type: 'ListDir'; Content: { absolute_root_path: string; content: string } }
+	| { type: 'ListDir'; NotFound: string };
 
-export type GrokGrepSearchToolRawOutput = {
+export type GrokListDirTool = GrokToolSpec<'ListDir', GrokListDirToolRawInput, GrokListDirToolRawOutput>;
+
+export type GrokGrepToolRawInput = GrokToolInput<'Grep'> & {
+	pattern: string;
+	path?: string | null;
+	glob?: string | null;
+	type?: string | null;
+	head_limit?: number;
+	multiline?: boolean;
+	output_mode?: 'content' | 'files_with_matches' | 'count' | (string & {});
+	'-A'?: number;
+	'-B'?: number;
+	'-i'?: boolean | null;
+};
+
+export type GrokGrepToolRawOutput = {
 	type: 'GrepSearch';
 	exit_code: number;
 	file_matches: GrokGrepFileMatch[];
 	match_count: number;
-	stderr: number[];
-	stdout: number[];
+	stderr: GrokByteArray;
+	stdout: GrokByteArray;
 };
 
-export type GrokGrepFileMatch = {
-	path: string;
-	matches: Record<string, unknown>[];
+export type GrokGrepTool = GrokToolSpec<'Grep', GrokGrepToolRawInput, GrokGrepToolRawOutput>;
+
+export type GrokSearchReplaceToolRawInput = GrokToolInput<'SearchReplace'> & {
+	file_path: string;
+	old_string: string;
+	new_string: string;
+	replace_all?: boolean;
 };
 
-export type GrokSearchReplaceToolRawOutput = {
-	type: 'SearchReplace';
-	EditsApplied: {
-		absolute_path: string;
-		edits: {
-			details: Record<string, unknown>[];
-		};
-		new_string: string;
-		old_string: string;
-		tool_output_for_prompt: string;
-		tool_output_for_prompt_concise: string;
-	};
+export type GrokSearchReplaceTool = GrokToolSpec<
+	'SearchReplace',
+	GrokSearchReplaceToolRawInput,
+	GrokSearchReplaceToolRawOutput
+>;
+
+export type GrokWebSearchToolRawInput = GrokToolInput<'WebSearch'> & {
+	query?: string;
+	backend?: boolean;
+	allowed_domains?: string[];
 };
 
 export type GrokWebSearchToolRawOutput = {
 	type: 'WebSearch';
-	allowed_domains: string[];
-	citations: string[];
-	content: string;
 	query: string;
+	content: string;
+	citations: string[];
+	allowed_domains: string[] | null;
+	pre_formatted?: string;
+};
+
+export type GrokWebSearchTool = GrokToolSpec<'WebSearch', GrokWebSearchToolRawInput, GrokWebSearchToolRawOutput>;
+
+export type GrokWebFetchToolRawInput = GrokToolInput<'WebFetch'> & {
+	url: string;
 };
 
 export type GrokWebFetchToolRawOutput = {
 	type: 'WebFetch';
 	Content: {
-		bytes: number;
+		url: string;
 		content: string;
 		content_type: string;
 		status_code: number;
-		url: string;
+		bytes: number;
 	};
 };
 
-export type GrokTodoToolRawOutput = {
-	type: 'Todo';
-	TodosUpdated: {
-		state: {
-			todos: Record<string, Record<string, unknown>>;
-		};
-		summary_for_prompt: string;
-		todos: GrokTodoOutput[];
-	};
+export type GrokWebFetchTool = GrokToolSpec<'WebFetch', GrokWebFetchToolRawInput, GrokWebFetchToolRawOutput>;
+
+export type GrokTodoStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | (string & {});
+
+export type GrokTodoInput = {
+	id: string;
+	content: string;
+	status: GrokTodoStatus;
 };
 
 export type GrokTodoOutput = {
 	content: string;
 	priority: string;
-	status: string;
+	status: GrokTodoStatus;
 };
+
+export type GrokTodoWriteToolRawInput = GrokToolInput<'TodoWrite'> & {
+	merge: boolean;
+	todos: GrokTodoInput[];
+};
+
+export type GrokTodoWriteToolRawOutput = {
+	type: 'Todo';
+	TodosUpdated: {
+		summary_for_prompt: string;
+		todos: GrokTodoOutput[];
+		state: { todos: Record<string, GrokTodoOutput & { id?: string }> };
+	};
+};
+
+export type GrokTodoWriteTool = GrokToolSpec<'TodoWrite', GrokTodoWriteToolRawInput, GrokTodoWriteToolRawOutput>;
+
+export type GrokWriteToolRawInput = GrokToolInput<'Write'> & {
+	filePath: string;
+	content: string;
+};
+
+/** Write completes with the same SearchReplace/EditsApplied payload as patch edits. */
+export type GrokWriteTool = GrokToolSpec<'Write', GrokWriteToolRawInput, GrokSearchReplaceToolRawOutput>;
+
+export type GrokNativeTool =
+	| GrokBashTool
+	| GrokReadFileTool
+	| GrokListDirTool
+	| GrokGrepTool
+	| GrokSearchReplaceTool
+	| GrokWebSearchTool
+	| GrokWebFetchTool
+	| GrokTodoWriteTool
+	| GrokWriteTool;
+
+// --- Backend web search streaming (no rawInput.variant) ---
+
+export type GrokSearchActionSource = { type: string; url: string };
+
+export type GrokSearchActionAction =
+	| { type: 'search'; query: string; sources: GrokSearchActionSource[] }
+	| { type: 'open_page'; url: string };
 
 export type GrokSearchActionToolRawOutput = {
 	id: string;
 	status: string;
-	action: {
-		query: string;
-		sources: { type: string; url: string }[];
-		type: string;
+	action: GrokSearchActionAction;
+};
+
+/** Emitted during WebSearch backend streaming; pairs with WebSearch final output. */
+export type GrokSearchActionTool = {
+	variant?: never;
+	rawInput?: never;
+	rawOutput: GrokSearchActionToolRawOutput;
+};
+
+// --- Bridge / auxiliary tools (Composer, MCP, scheduler, etc.) ---
+
+export type GrokBridgeToolVariant =
+	| 'CursorShell'
+	| 'CursorRead'
+	| 'CursorGrep'
+	| 'CursorStrReplace'
+	| 'CursorWrite'
+	| 'CursorGlob'
+	| 'CursorWebFetch'
+	| 'CursorWebSearch'
+	| 'CursorTodoWrite'
+	| 'CursorTask'
+	| 'CursorAwaitShell'
+	| 'CursorListMcpResources'
+	| 'UseTool'
+	| 'TaskOutput'
+	| 'KillTask'
+	| 'SchedulerList'
+	| 'SearchTool'
+	| 'XSearch';
+
+export type GrokBridgeToolRawInput = GrokToolInput<GrokBridgeToolVariant> & Record<string, unknown>;
+
+export type GrokMcpToolRawOutput = {
+	type: 'MCP';
+	tool_name: string;
+	server_name: string;
+	output: Record<string, string>;
+};
+
+export type GrokTaskOutputToolRawOutput = {
+	type: 'TaskOutput';
+	Result: {
+		task_id: string;
+		command: string;
+		status: string;
+		exit_code: number | null;
+		started: string;
+		ended: string;
+		duration_secs: number;
+		output: string;
+		output_file: string;
+		truncated: boolean;
+		truncation_hint?: string;
+		raw_output_bytes: number;
 	};
 };
 
-export type GrokToolCallUpdate = Omit<AcpToolCallUpdate, 'rawInput' | 'rawOutput' | 'sessionUpdate'> & {
-	sessionUpdate: 'tool_call_update';
-	rawInput?: GrokToolRawInput;
-	rawOutput?: GrokToolRawOutput;
+export type GrokKillTaskToolRawOutput = {
+	type: 'KillTask';
+	Result: { task_id: string; outcome: string; message: string };
 };
 
-export type GrokToolCall = Omit<AcpToolCall, 'rawInput' | 'rawOutput' | 'sessionUpdate'> & {
-	sessionUpdate: 'tool_call';
-	rawInput?: GrokToolRawInput;
-	rawOutput?: GrokToolRawOutput;
+export type GrokSchedulerListToolRawOutput = {
+	type: 'SchedulerList';
+	tasks: unknown[];
 };
+
+export type GrokSearchToolRawOutput = {
+	type: 'SearchTool';
+	result_count: number;
+	content: string;
+};
+
+export type GrokBridgeToolRawOutput =
+	| GrokBashToolRawOutput
+	| GrokBackgroundTaskStartedOutput
+	| GrokReadFileToolRawOutput
+	| GrokListDirToolRawOutput
+	| GrokGrepToolRawOutput
+	| GrokSearchReplaceToolRawOutput
+	| GrokWebSearchToolRawOutput
+	| GrokWebFetchToolRawOutput
+	| GrokTodoWriteToolRawOutput
+	| GrokTextToolRawOutput
+	| GrokMcpToolRawOutput
+	| GrokTaskOutputToolRawOutput
+	| GrokKillTaskToolRawOutput
+	| GrokSchedulerListToolRawOutput
+	| GrokSearchToolRawOutput;
+
+export type GrokBridgeTool = GrokToolSpec<GrokBridgeToolVariant, GrokBridgeToolRawInput, GrokBridgeToolRawOutput>;
+
+export type GrokTool = GrokNativeTool | GrokBridgeTool | GrokSearchActionTool;
+
+export type GrokToolVariant = GrokTool['variant'];
+export type GrokNamedTool = Extract<GrokTool, { variant: string }>;
+export type GrokToolByVariant<V extends GrokToolVariant> = Extract<GrokTool, { variant: V }>;
+export type GrokToolRawInput = GrokTool['rawInput'];
+export type GrokToolRawOutput = GrokTool['rawOutput'];
+export type GrokToolRawInputByVariant<V extends GrokToolVariant> = GrokToolByVariant<V>['rawInput'];
+export type GrokToolRawOutputByVariant<V extends GrokToolVariant> = GrokToolByVariant<V>['rawOutput'];
+
+type GrokToolCallBase = Omit<AcpToolCall, 'rawInput' | 'rawOutput' | 'sessionUpdate'>;
+type GrokToolCallUpdateBase = Omit<AcpToolCallUpdate, 'rawInput' | 'rawOutput' | 'sessionUpdate'>;
+
+export type GrokToolCallOf<T extends GrokTool> = GrokToolCallBase & {
+	sessionUpdate: 'tool_call';
+	rawInput?: T['rawInput'];
+	rawOutput?: T['rawOutput'];
+};
+
+export type GrokToolCallUpdateOf<T extends GrokTool> = GrokToolCallUpdateBase & {
+	sessionUpdate: 'tool_call_update';
+	rawInput?: T['rawInput'];
+	rawOutput?: T['rawOutput'];
+};
+
+export type GrokToolCall = GrokToolCallOf<GrokTool>;
+export type GrokToolCallUpdate = GrokToolCallUpdateOf<GrokTool>;
 
 export type GrokRetryStateUpdate =
 	| {
@@ -276,9 +444,7 @@ export type GrokCompactionCheckpointUpdate = {
 	schema_version: number;
 };
 
-export type GrokMemoryFlushStartedUpdate = {
-	sessionUpdate: 'memory_flush_started';
-};
+export type GrokMemoryFlushStartedUpdate = { sessionUpdate: 'memory_flush_started' };
 
 export type GrokMemoryFlushCompletedUpdate = {
 	sessionUpdate: 'memory_flush_completed';
