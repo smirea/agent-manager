@@ -2,6 +2,20 @@
 	import SvelteMarkdown from '@humanspeak/svelte-markdown';
 	import type { ComponentProps } from 'svelte';
 	const { class: cn, ...props }: { class?: string } & ComponentProps<typeof SvelteMarkdown> = $props();
+
+	const anchorAttributes = new Set(['href', 'title', 'target', 'rel', 'aria-label']);
+	const validAttributeName = /^[A-Za-z_:][A-Za-z0-9_:.-]*$/;
+
+	function safeAnchorAttributes(attributes: Record<string, unknown> | null | undefined) {
+		const safe: Record<string, string> = {};
+
+		for (const [name, value] of Object.entries(attributes ?? {})) {
+			if (!anchorAttributes.has(name) || !validAttributeName.test(name) || value == null || value === false) continue;
+			safe[name] = String(value);
+		}
+
+		return safe;
+	}
 </script>
 
 <div class={['root', cn]}>
@@ -12,7 +26,7 @@
 			</a>
 		{/snippet}
 		{#snippet html_a({ attributes, children })}
-			<a {...attributes} tabindex="-1" data-snippet="html_a">
+			<a {...safeAnchorAttributes(attributes)} tabindex="-1" data-snippet="html_a">
 				{@render children?.()}
 			</a>
 		{/snippet}
