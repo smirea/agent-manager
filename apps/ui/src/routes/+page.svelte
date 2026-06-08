@@ -12,7 +12,6 @@
 		if (typeof document === 'undefined') return;
 		document.documentElement.dataset.theme = theme;
 	});
-	const sessions = createQuery(() => orpc.sessions.list.queryOptions());
 	const session = createQuery(() =>
 		orpc.sessions.get.queryOptions({ input: { id: '019ea7fc-4383-77d2-b76e-6877858ef00c' } }),
 	);
@@ -24,7 +23,6 @@
 		return { destroy: () => ro.disconnect() };
 	};
 
-	const expanded = $state({} as Record<string, boolean>);
 	const compiled = $derived(compileUpdates(session.data?.updates ?? []));
 </script>
 
@@ -35,23 +33,6 @@
 <main class="root" style={`padding-bottom: calc(${paddingBottom}px + 1rem)`}>
 	<div class="content">
 		<ChatContent {compiled} />
-		<!-- <pre>{JSON.stringify(compiled, null, 4)}</pre> -->
-		<div class="debug">
-			{#each compiled.list as update, index}
-				<div>
-					<div onclick={() => (expanded[index] = !expanded[index])}>
-						<b>{update.sessionUpdate}</b>:
-						{Object.keys(update)
-							.filter(x => x !== 'sessionUpdate')
-							.join('; ')}
-					</div>
-					{#if expanded[index]}
-						<pre class="pl-4 text-xs">{JSON.stringify(update, null, 4)}</pre>
-					{/if}
-				</div>
-			{/each}
-		</div>
-		<!-- <pre>{JSON.stringify(session.data, null, 4)}</pre> -->
 	</div>
 
 	<div use:onResize class="input">

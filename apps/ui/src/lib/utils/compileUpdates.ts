@@ -47,7 +47,7 @@ export type ClankerMessage = {
 	content: ClankerContent[];
 };
 
-type UserMessage = { role: 'user'; id?: string; text: string };
+type UserMessage = { role: 'user'; id?: string; content: acp.ContentBlock[] };
 type Message = UserMessage | ClankerMessage;
 
 type RawToolItem = GrokToolCall | GrokToolCallUpdate;
@@ -89,8 +89,6 @@ export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUp
 
 	const tools: Record<string, number> = {};
 
-	console.info(updates);
-
 	for (const item of updates) {
 		switch (item.sessionUpdate) {
 			case 'available_commands_update':
@@ -124,6 +122,14 @@ export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUp
 	const list = compilingList as CompiledListItem[];
 
 	const l = <T>(a: T[]) => a[a.length - 1];
+	const appendContent = (content: acp.ContentBlock[], next: acp.ContentBlock) => {
+		const last = l(content);
+		if (last?.type === 'text' && next.type === 'text') {
+			last.text += next.text;
+		} else {
+			content.push(next);
+		}
+	};
 
 	let lastThinkingTime = 0;
 	for (const [index, item] of list.entries()) {
@@ -134,22 +140,16 @@ export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUp
 					last = {
 						role: 'user',
 						id: item.messageId || undefined,
-						text: '',
+						content: [],
 					};
 					chat.push(last);
 				}
-				switch (item.content.type) {
-					case 'text':
-						last.text += item.content.text;
-						break;
-					default:
-						console.warn('TODO:', item.content);
-				}
+				appendContent(last.content, item.content);
 				break;
 			case 'agent_thought_chunk':
 			case 'agent_message_chunk':
 				const content: ClankerContent = item.content;
-				if (last.role !== 'clanker') lastThinkingTime = 0;
+				if (!last || last.role !== 'clanker') lastThinkingTime = 0;
 				if (content.type === 'text' && item.sessionUpdate === 'agent_thought_chunk') {
 					content.thinking = true;
 					const { agentTimestampMs, turnStartMs } = (item._meta || {}) as {
@@ -165,11 +165,11 @@ export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUp
 						lastThinkingTime = agentTimestampMs;
 					}
 				}
-				if (last.role === 'clanker') {
+				if (last?.role === 'clanker') {
 					const lc = l(last.content);
 					if (lc.type === 'text' && content.type === 'text' && !!lc.thinking === content.thinking) {
 						lc.text += content.text;
-					} else if (content.type === 'text') {
+					} else {
 						last.content.push(content);
 					}
 				} else {
@@ -181,7 +181,7 @@ export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUp
 				}
 				break;
 			case 'tool':
-				if (last.role !== 'clanker') {
+				if (!last || last.role !== 'clanker') {
 					console.warn('TODO: tool call but agent is not last message, this should not happen at index=', index);
 					break;
 				}
