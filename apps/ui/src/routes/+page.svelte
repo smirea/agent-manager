@@ -14,7 +14,7 @@
 	});
 	const sessions = createQuery(() => orpc.sessions.list.queryOptions());
 	const session = createQuery(() =>
-		orpc.sessions.get.queryOptions({ input: { id: '019e6589-0669-7673-b81b-f6feaecd6c36' } }),
+		orpc.sessions.get.queryOptions({ input: { id: '019ea7fc-4383-77d2-b76e-6877858ef00c' } }),
 	);
 
 	let paddingBottom = $state(0);

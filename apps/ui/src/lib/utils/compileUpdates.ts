@@ -1,40 +1,91 @@
 import type {
 	AcpAgentMessageChunkUpdate,
+	GrokNamedTool,
 	GrokSessionUpdate,
 	GrokToolCall,
 	GrokToolCallUpdate,
+	GrokToolRawInput,
+	GrokToolRawOutput,
 	Merge,
 } from '@repo/shared';
 import type * as acp from '@agentclientprotocol/sdk';
 
-type Tool = Merge<Merge<GrokToolCall, GrokToolCallUpdate>, { type: 'tool'; sessionUpdate: 'tool' }>;
-type ClankerContent =
-	| Tool
-	| Merge<
-			AcpAgentMessageChunkUpdate['content'] & { type: 'text' },
-			{ thinking?: boolean; thinkingDurationSec?: number }
-	  >
+type CompiledToolBase = Omit<GrokToolCall, 'rawInput' | 'rawOutput' | 'sessionUpdate'> & {
+	type: 'tool';
+	sessionUpdate: 'tool';
+};
+
+export type CompiledToolOf<T extends GrokNamedTool> = CompiledToolBase & {
+	variant: T['variant'];
+	rawInput?: T['rawInput'];
+	rawOutput?: T['rawOutput'];
+};
+
+type CompiledToolKnown = CompiledToolOf<GrokNamedTool>;
+
+type CompiledToolUnknown = CompiledToolBase & {
+	variant?: undefined;
+	rawInput?: GrokToolRawInput;
+	rawOutput?: GrokToolRawOutput;
+};
+
+export type CompiledTool = CompiledToolKnown | CompiledToolUnknown;
+
+export type ClankerTextContent = Merge<
+	Extract<AcpAgentMessageChunkUpdate['content'], { type: 'text' }>,
+	{ thinking?: boolean; thinkingDurationSec?: number }
+>;
+
+export type ClankerContent =
+	| CompiledTool
+	| ClankerTextContent
 	| Exclude<AcpAgentMessageChunkUpdate['content'], { type: 'text' }>;
+
 export type ClankerMessage = {
 	role: 'clanker';
 	id?: string;
 	content: ClankerContent[];
 };
-type Message = { role: 'user'; id?: string; text: string } | ClankerMessage;
 
-export default function compileUpdates(updates: GrokSessionUpdate[]) {
-	const result = {
-		mode: 'plan',
-		availableCommands: [] as acp.AvailableCommand[],
-		list: [] as Array<
-			| Tool
-			| Exclude<
-					GrokSessionUpdate,
-					{ sessionUpdate: 'available_commands_update' | 'current_mode_update' | `tool_call${string}` }
-			  >
-		>,
-		chat: [] as Message[],
-	};
+type UserMessage = { role: 'user'; id?: string; text: string };
+type Message = UserMessage | ClankerMessage;
+
+type RawToolItem = GrokToolCall | GrokToolCallUpdate;
+
+type CompiledListItem =
+	| CompiledTool
+	| Exclude<
+			GrokSessionUpdate,
+			{ sessionUpdate: 'available_commands_update' | 'current_mode_update' | `tool_call${string}` }
+	  >;
+
+type CompilingListItem =
+	| RawToolItem
+	| CompiledTool
+	| Exclude<
+			GrokSessionUpdate,
+			{ sessionUpdate: 'available_commands_update' | 'current_mode_update' | `tool_call${string}` }
+	  >;
+
+export type CompiledUpdates = {
+	mode: string;
+	availableCommands: acp.AvailableCommand[];
+	list: CompiledListItem[];
+	chat: Message[];
+};
+
+function finalizeTool(item: RawToolItem): CompiledTool {
+	const variant = item.rawInput?.variant;
+	const compiled = { ...item, type: 'tool' as const, sessionUpdate: 'tool' as const };
+	if (variant === undefined) return compiled as CompiledTool;
+	return { ...compiled, variant } as CompiledTool;
+}
+
+export default function compileUpdates(updates: GrokSessionUpdate[]): CompiledUpdates {
+	const availableCommands: acp.AvailableCommand[] = [];
+	let mode = 'plan';
+	const compilingList: CompilingListItem[] = [];
+	const chat: Message[] = [];
 
 	const tools: Record<string, number> = {};
 
@@ -43,33 +94,40 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 	for (const item of updates) {
 		switch (item.sessionUpdate) {
 			case 'available_commands_update':
-				result.availableCommands = item.availableCommands;
+				availableCommands.splice(0, availableCommands.length, ...item.availableCommands);
 				break;
 			case 'current_mode_update':
-				result.mode = item.currentModeId;
+				mode = item.currentModeId;
 				break;
 			case 'tool_call':
-				tools[item.toolCallId] = result.list.length;
-				result.list.push(item as any);
+				tools[item.toolCallId] = compilingList.length;
+				compilingList.push(item);
 				break;
 			case 'tool_call_update':
-				if (tools[item.toolCallId] != null) Object.assign(result.list[tools[item.toolCallId]], item);
+				if (tools[item.toolCallId] != null) Object.assign(compilingList[tools[item.toolCallId]], item);
 				break;
 			case 'tool_call_delta_chunk':
 				// todo: empty?
 				console.warn('TODO:', item.sessionUpdate);
 				break;
 			default:
-				result.list.push(item);
+				compilingList.push(item);
 		}
 	}
 
-	Object.values(tools).forEach(index => Object.assign(result.list[index], { type: 'tool', sessionUpdate: 'tool' }));
+	for (const index of Object.values(tools)) {
+		const item = compilingList[index];
+		if (item.sessionUpdate !== 'tool_call' && item.sessionUpdate !== 'tool_call_update') continue;
+		compilingList[index] = finalizeTool(item);
+	}
+
+	const list = compilingList as CompiledListItem[];
+
 	const l = <T>(a: T[]) => a[a.length - 1];
 
 	let lastThinkingTime = 0;
-	for (const [index, item] of result.list.entries()) {
-		let last = l(result.chat);
+	for (const [index, item] of list.entries()) {
+		let last = l(chat);
 		switch (item.sessionUpdate) {
 			case 'user_message_chunk':
 				if (!last || last.role !== 'user') {
@@ -78,7 +136,7 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 						id: item.messageId || undefined,
 						text: '',
 					};
-					result.chat.push(last);
+					chat.push(last);
 				}
 				switch (item.content.type) {
 					case 'text':
@@ -115,7 +173,7 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 						last.content.push(content);
 					}
 				} else {
-					result.chat.push({
+					chat.push({
 						role: 'clanker',
 						id: item.messageId || undefined,
 						content: [content],
@@ -132,5 +190,5 @@ export default function compileUpdates(updates: GrokSessionUpdate[]) {
 		}
 	}
 
-	return result;
+	return { mode, availableCommands, list, chat };
 }

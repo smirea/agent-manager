@@ -89,7 +89,7 @@
 
 	.root :global(strong) {
 		font-weight: bold;
-		color: var(--grok-strong);
+		/* color: var(--grok-strong); */ /* not actually used */
 	}
 
 	.root :global(a) {
@@ -158,15 +158,5 @@
 		background-color: var(--grok-table-head-bg);
 		color: var(--grok-table-head-fg);
 		font-weight: bold;
-	}
-
-	.root :global(td:nth-child(1)) {
-		color: var(--grok-table-col-1);
-	}
-	.root :global(td:nth-child(2)) {
-		color: var(--grok-table-col-2);
-	}
-	.root :global(td:nth-child(3)) {
-		color: var(--grok-table-col-3);
 	}
 </style>
